@@ -1,0 +1,725 @@
+{
+ "gerado_por": "gerar_duelos.py",
+ "duelos": [
+  {
+   "data": "2026-11-05",
+   "numero": 1,
+   "pistas": [
+    "R03",
+    "N06",
+    "N14",
+    "P02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-06",
+   "numero": 2,
+   "pistas": [
+    "F01",
+    "C06",
+    "E01",
+    "M06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-07",
+   "numero": 3,
+   "pistas": [
+    "K03",
+    "I01",
+    "P05",
+    "M01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-08",
+   "numero": 4,
+   "pistas": [
+    "N09",
+    "R02",
+    "F04",
+    "M05"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-09",
+   "numero": 5,
+   "pistas": [
+    "P03",
+    "F07",
+    "R01",
+    "C05"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-10",
+   "numero": 6,
+   "pistas": [
+    "I02",
+    "N18",
+    "C07",
+    "E02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-11",
+   "numero": 7,
+   "pistas": [
+    "N03",
+    "N15",
+    "N17",
+    "N16"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-12",
+   "numero": 8,
+   "pistas": [
+    "T01",
+    "M02",
+    "N01",
+    "N20"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-13",
+   "numero": 9,
+   "pistas": [
+    "I05",
+    "N12",
+    "N10",
+    "E06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-14",
+   "numero": 10,
+   "pistas": [
+    "C03",
+    "N11",
+    "P01",
+    "K01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-15",
+   "numero": 11,
+   "pistas": [
+    "N07",
+    "F06",
+    "M04",
+    "C01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-16",
+   "numero": 12,
+   "pistas": [
+    "N14",
+    "N05",
+    "N06",
+    "N19"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-17",
+   "numero": 13,
+   "pistas": [
+    "C06",
+    "M06",
+    "F01",
+    "P02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-18",
+   "numero": 14,
+   "pistas": [
+    "C02",
+    "P04",
+    "M01",
+    "I01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-19",
+   "numero": 15,
+   "pistas": [
+    "M05",
+    "N09",
+    "R02",
+    "F03"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-20",
+   "numero": 16,
+   "pistas": [
+    "C05",
+    "K03",
+    "E01",
+    "F07"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-21",
+   "numero": 17,
+   "pistas": [
+    "F04",
+    "P05",
+    "C07",
+    "N18"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-22",
+   "numero": 18,
+   "pistas": [
+    "N16",
+    "N17",
+    "R01",
+    "N15"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-23",
+   "numero": 19,
+   "pistas": [
+    "N08",
+    "P03",
+    "N01",
+    "M02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-24",
+   "numero": 20,
+   "pistas": [
+    "R03",
+    "T01",
+    "I05",
+    "E06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-25",
+   "numero": 21,
+   "pistas": [
+    "C04",
+    "N11",
+    "N10",
+    "P01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-26",
+   "numero": 22,
+   "pistas": [
+    "C01",
+    "M04",
+    "N07",
+    "F06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-27",
+   "numero": 23,
+   "pistas": [
+    "N14",
+    "N06",
+    "N19",
+    "E02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-28",
+   "numero": 24,
+   "pistas": [
+    "C06",
+    "K01",
+    "I02",
+    "F01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-29",
+   "numero": 25,
+   "pistas": [
+    "I01",
+    "N03",
+    "C02",
+    "M01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-11-30",
+   "numero": 26,
+   "pistas": [
+    "N05",
+    "R02",
+    "M05",
+    "F03"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-01",
+   "numero": 27,
+   "pistas": [
+    "P02",
+    "C05",
+    "M06",
+    "F07"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-02",
+   "numero": 28,
+   "pistas": [
+    "P04",
+    "K03",
+    "C07",
+    "N18"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-03",
+   "numero": 29,
+   "pistas": [
+    "N15",
+    "N16",
+    "E01",
+    "N17"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-04",
+   "numero": 30,
+   "pistas": [
+    "M02",
+    "P05",
+    "N12",
+    "N01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-05",
+   "numero": 31,
+   "pistas": [
+    "I05",
+    "N09",
+    "E06",
+    "F04"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-06",
+   "numero": 32,
+   "pistas": [
+    "N10",
+    "N11",
+    "R03",
+    "P01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-07",
+   "numero": 33,
+   "pistas": [
+    "N08",
+    "N07",
+    "C01",
+    "M04"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-08",
+   "numero": 34,
+   "pistas": [
+    "N06",
+    "N20",
+    "N14",
+    "R01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-09",
+   "numero": 35,
+   "pistas": [
+    "C06",
+    "K01",
+    "F01",
+    "N13"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-10",
+   "numero": 36,
+   "pistas": [
+    "P03",
+    "M01",
+    "I01",
+    "F06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-11",
+   "numero": 37,
+   "pistas": [
+    "M05",
+    "T01",
+    "R02",
+    "I02"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-12",
+   "numero": 38,
+   "pistas": [
+    "C05",
+    "F07",
+    "P02",
+    "M06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-13",
+   "numero": 39,
+   "pistas": [
+    "N05",
+    "C07",
+    "F03",
+    "N18"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-14",
+   "numero": 40,
+   "pistas": [
+    "N16",
+    "N15",
+    "E02",
+    "N17"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-15",
+   "numero": 41,
+   "pistas": [
+    "C04",
+    "M02",
+    "N01",
+    "P04"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-16",
+   "numero": 42,
+   "pistas": [
+    "I05",
+    "N09",
+    "E06",
+    "F04"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-17",
+   "numero": 43,
+   "pistas": [
+    "C02",
+    "N10",
+    "P01",
+    "N11"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-18",
+   "numero": 44,
+   "pistas": [
+    "P05",
+    "C01",
+    "R03",
+    "N07"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-19",
+   "numero": 45,
+   "pistas": [
+    "N06",
+    "N12",
+    "N14",
+    "R01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-20",
+   "numero": 46,
+   "pistas": [
+    "C06",
+    "F01",
+    "M04",
+    "K01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-21",
+   "numero": 47,
+   "pistas": [
+    "E01",
+    "I01",
+    "M01",
+    "C03"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-22",
+   "numero": 48,
+   "pistas": [
+    "R02",
+    "F06",
+    "M05",
+    "N19"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-23",
+   "numero": 49,
+   "pistas": [
+    "N13",
+    "C05",
+    "P02",
+    "F07"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-24",
+   "numero": 50,
+   "pistas": [
+    "T01",
+    "N18",
+    "C07",
+    "K03"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-25",
+   "numero": 51,
+   "pistas": [
+    "F03",
+    "N05",
+    "N17",
+    "N16"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-26",
+   "numero": 52,
+   "pistas": [
+    "C04",
+    "N01",
+    "M02",
+    "P04"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-27",
+   "numero": 53,
+   "pistas": [
+    "N15",
+    "E06",
+    "I05",
+    "N08"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-28",
+   "numero": 54,
+   "pistas": [
+    "N11",
+    "M06",
+    "N03",
+    "P01"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-29",
+   "numero": 55,
+   "pistas": [
+    "C01",
+    "F04",
+    "P05",
+    "N07"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-30",
+   "numero": 56,
+   "pistas": [
+    "E02",
+    "N06",
+    "N14",
+    "P03"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2026-12-31",
+   "numero": 57,
+   "pistas": [
+    "F01",
+    "I02",
+    "R01",
+    "C06"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2027-01-01",
+   "numero": 58,
+   "pistas": [
+    "N12",
+    "M01",
+    "I01",
+    "N10"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2027-01-02",
+   "numero": 59,
+   "pistas": [
+    "F06",
+    "R02",
+    "N19",
+    "M05"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  },
+  {
+   "data": "2027-01-03",
+   "numero": 60,
+   "pistas": [
+    "E01",
+    "N13",
+    "F07",
+    "C05"
+   ],
+   "versao_dados": "catalogo-v0.5",
+   "versao_motor": "lexico-v0.4"
+  }
+ ]
+}

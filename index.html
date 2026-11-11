@@ -1,0 +1,1393 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Duelo de Palavras</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: um placar de duelo. Faixa de confronto no topo (você em anil, rival em urucum),
+   pista como peças de letra, campo de digitação ancorado acima do teclado. */
+:root {
+  --papel: #F3F4F8; --superficie: #FFFFFF; --tinta: #14172A; --tinta-2: #585D75; --linha: #DCDFEA;
+  --voce: #2A44C4; --voce-suave: #E2E6FA; --voce-tinta: #FFFFFF;
+  --rival: #C94A24; --rival-suave: #FBE5DC; --rival-tinta: #FFFFFF;
+  --ok: #1B7F4F; --ok-suave: #DFF3E8; --erro: #B8302C; --erro-suave: #FBE3E2; --atencao: #9A6512; --atencao-suave: #FBEFD9;
+  --peca: #FFFFFF; --peca-borda: #14172A;
+  --display: 'Anybody', 'Arial Narrow', 'Helvetica Neue', Arial, sans-serif;
+  --texto: 'Atkinson Hyperlegible', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --raio: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --papel: #0E1019; --superficie: #171A28; --tinta: #ECEEF6; --tinta-2: #A2A7BF; --linha: #2A2E43;
+  --voce: #8095FF; --voce-suave: #222A55; --voce-tinta: #0E1019;
+  --rival: #FF8A62; --rival-suave: #47251A; --rival-tinta: #0E1019;
+  --ok: #4CC98A; --ok-suave: #163626; --erro: #FF6E68; --erro-suave: #3D1B1B; --atencao: #F0B44A; --atencao-suave: #3A2B12;
+  --peca: #1F2335; --peca-borda: #ECEEF6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --papel: #0E1019; --superficie: #171A28; --tinta: #ECEEF6; --tinta-2: #A2A7BF; --linha: #2A2E43;
+  --voce: #8095FF; --voce-suave: #222A55; --voce-tinta: #0E1019;
+  --rival: #FF8A62; --rival-suave: #47251A; --rival-tinta: #0E1019;
+  --ok: #4CC98A; --ok-suave: #163626; --erro: #FF6E68; --erro-suave: #3D1B1B; --atencao: #F0B44A; --atencao-suave: #3A2B12;
+  --peca: #1F2335; --peca-borda: #ECEEF6; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--papel); color: var(--tinta); font-family: var(--texto); font-size: 16px; line-height: 1.45;
+  -webkit-text-size-adjust: 100%; overflow: hidden; }
+* { box-sizing: border-box; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--voce); outline-offset: 2px; }
+
+.app { height: var(--alt, 100%); display: flex; flex-direction: column; max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.tela { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.rolavel { overflow-y: auto; overscroll-behavior: contain; padding-block: 20px 28px; }
+
+/* ---------- tipografia ---------- */
+.marca { font-family: var(--display); font-weight: 900; font-stretch: 62%; line-height: .86; letter-spacing: -.01em;
+  text-transform: uppercase; margin: 0; text-wrap: balance; }
+.rotulo { font-size: .75rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--tinta-2); }
+.num { font-family: var(--display); font-variant-numeric: tabular-nums; font-weight: 800; font-stretch: 75%; }
+
+/* ---------- botões ---------- */
+.btn { appearance: none; border: 0; border-radius: 999px; padding: 15px 22px; font-weight: 700; font-size: 1.05rem;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px;
+  transition: transform .12s ease, background-color .15s ease; }
+.btn:active { transform: scale(.97); }
+.btn-primario { background: var(--tinta); color: var(--papel); }
+.btn-secundario { background: transparent; color: var(--tinta); box-shadow: inset 0 0 0 2px var(--linha); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.btn-largo { width: 100%; }
+
+/* ---------- peças de letra (assinatura do jogo) ---------- */
+.pecas { display: flex; gap: 6px; flex-wrap: wrap; }
+.peca { min-width: 2.1em; height: 2.3em; padding: 0 .35em; display: grid; place-items: center; background: var(--peca);
+  border: 2px solid var(--peca-borda); border-bottom-width: 5px; border-radius: 8px; font-family: var(--display);
+  font-weight: 900; font-stretch: 80%; text-transform: uppercase; line-height: 1; }
+.peca.riscada { position: relative; color: var(--tinta-2); }
+.peca.riscada::after { content: ''; position: absolute; left: 12%; right: 12%; top: 50%; border-top: 3px solid var(--erro); transform: rotate(-35deg); }
+.peca.fantasma { border-style: dashed; border-bottom-width: 2px; color: var(--tinta-2); font-weight: 600; }
+
+/* ---------- início ---------- */
+.inicio { gap: 26px; }
+.inicio .marca { font-size: clamp(3.4rem, 17vw, 5.6rem); }
+.inicio .marca span { display: block; }
+.inicio .marca .de { font-size: .42em; font-stretch: 100%; font-weight: 700; letter-spacing: .02em; color: var(--tinta-2);
+  margin: .12em 0 .08em; }
+.vs-demo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.vs-demo .lado { display: flex; align-items: center; gap: 8px; }
+.ponto { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.ponto.voce { background: var(--voce); } .ponto.rival { background: var(--rival); }
+.regras { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; max-width: 46ch; }
+.regras li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
+.regras .ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; background: var(--superficie);
+  box-shadow: inset 0 0 0 1.5px var(--linha); font-family: var(--display); font-weight: 900; font-size: .85rem; }
+.niveis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border: 0; padding: 0; margin: 0; }
+.niveis legend { margin-bottom: 10px; }
+.nivel { position: relative; display: grid; }
+.nivel input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.nivel label { display: grid; gap: 2px; padding: 12px 10px; border-radius: 12px; background: var(--superficie);
+  box-shadow: inset 0 0 0 2px var(--linha); cursor: pointer; min-height: 76px; align-content: center; transition: box-shadow .15s; }
+.nivel label b { font-size: 1.02rem; }
+.nivel label small { color: var(--tinta-2); font-size: .8rem; line-height: 1.25; }
+.nivel input:checked + label { box-shadow: inset 0 0 0 3px var(--tinta); }
+.nivel input:focus-visible + label { outline: 3px solid var(--voce); outline-offset: 2px; }
+.aviso { font-size: .82rem; color: var(--tinta-2); margin: 0; }
+.erro-carga { color: var(--erro); font-weight: 700; margin: 0; }
+
+/* ---------- placar ---------- */
+.topo { padding-block: 12px 10px; display: grid; gap: 8px; }
+.linha-topo { display: flex; justify-content: space-between; align-items: center; }
+.placar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 8px; }
+.lado-placar { display: grid; gap: 0; min-width: 0; }
+.lado-placar.rival { text-align: right; }
+.lado-placar .quem { font-weight: 700; font-size: .85rem; display: flex; gap: 6px; align-items: center; white-space: nowrap; overflow: hidden; }
+.lado-placar.rival .quem { justify-content: flex-end; }
+.lado-placar .pts { font-size: 2.7rem; line-height: .95; display: inline-block; transform-origin: center bottom; }
+.lado-placar.voce .pts { color: var(--voce); }
+.lado-placar.rival .pts { color: var(--rival); }
+.selo { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 6px;
+  border-radius: 6px; background: var(--rival-suave); color: var(--rival); }
+.vs { font-family: var(--display); font-weight: 800; font-stretch: 70%; color: var(--tinta-2); padding-bottom: 6px; }
+.cabo { height: 8px; border-radius: 99px; background: var(--rival); overflow: hidden; display: flex; }
+.cabo i { display: block; height: 100%; background: var(--voce); width: 50%; transition: width .35s cubic-bezier(.3,.8,.3,1);
+  border-right: 2px solid var(--papel); }
+.bump { animation: bump .35s ease; }
+@keyframes bump { 40% { transform: scale(1.18); } }
+
+/* ---------- pista ---------- */
+.pista { background: var(--superficie); border-radius: var(--raio); padding: 14px 16px 0; display: grid; gap: 8px;
+  box-shadow: 0 1px 0 var(--linha), 0 0 0 1px var(--linha); overflow: hidden; }
+.pista .frase { font-size: 1.22rem; font-weight: 700; line-height: 1.2; text-wrap: balance; margin: 0; }
+.pista .dica { font-size: .85rem; color: var(--tinta-2); margin: 0; }
+.pista-meio { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.relogio { font-size: 2rem; line-height: 1; }
+.relogio.fim { color: var(--erro); }
+.barra-tempo { height: 6px; margin: 0 -16px; background: var(--linha); }
+.barra-tempo i { display: block; height: 100%; background: var(--tinta); width: 100%; transform-origin: left; }
+.barra-tempo.fim i { background: var(--erro); }
+
+/* ---------- feed ---------- */
+.feed { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-block: 12px; display: flex;
+  flex-direction: column; gap: 8px; }
+.feed-cab { display: flex; justify-content: space-between; align-items: baseline; }
+.lista { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; font-weight: 700;
+  font-size: .95rem; background: var(--superficie); box-shadow: inset 0 0 0 1.5px var(--linha); animation: entra .22s ease both; }
+.chip .p { font-family: var(--display); font-stretch: 75%; font-weight: 800; font-variant-numeric: tabular-nums; }
+.chip.Aceita { background: var(--voce-suave); box-shadow: none; }
+.chip.Aceita .p { color: var(--voce); }
+.chip.recusa { color: var(--tinta-2); font-weight: 400; }
+.chip.recusa .w { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.chip.Bloqueada { background: var(--rival-suave); box-shadow: none; color: var(--tinta); }
+.chip .ic { font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+@keyframes entra { from { transform: translateY(6px); opacity: 0; } }
+.vazio { color: var(--tinta-2); font-size: .92rem; margin: 0; }
+.linha-rival { display: flex; gap: 6px; flex-wrap: wrap; }
+.blip { font-family: var(--display); font-weight: 800; font-stretch: 75%; color: var(--rival); background: var(--rival-suave);
+  padding: 2px 7px; border-radius: 7px; font-size: .85rem; animation: entra .22s ease both; }
+
+/* ---------- campo ---------- */
+.campo { padding-block: 8px calc(10px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; background: var(--papel); }
+.retorno { min-height: 30px; display: flex; align-items: center; }
+.retorno .msg { display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px; border-radius: 9px; font-weight: 700;
+  font-size: .95rem; }
+.retorno .msg.ok { background: var(--ok-suave); color: var(--ok); }
+.retorno .msg.erro { background: var(--erro-suave); color: var(--erro); }
+.retorno .msg.atencao { background: var(--atencao-suave); color: var(--atencao); }
+.retorno .msg.bloq { background: var(--rival-suave); color: var(--rival); }
+.retorno .dica-enter { color: var(--tinta-2); font-size: .85rem; }
+.form { display: flex; gap: 8px; }
+.form input { flex: 1 1 0; min-width: 0; width: 0; font: inherit; font-size: 1.25rem; font-weight: 700; padding: 13px 16px; border-radius: 14px;
+  border: 2px solid var(--tinta); background: var(--superficie); color: var(--tinta); text-transform: lowercase; }
+.form input::placeholder { color: var(--tinta-2); font-weight: 400; text-transform: none; }
+.form input:focus { outline: none; border-color: var(--voce); box-shadow: 0 0 0 3px var(--voce-suave); }
+.form input:disabled { opacity: .6; }
+.form .btn { min-height: 0; padding: 0 18px; border-radius: 14px; }
+.treme { animation: treme .28s ease; }
+@keyframes treme { 20%,60% { transform: translateX(-5px); } 40%,80% { transform: translateX(5px); } }
+
+/* ---------- antes da rodada ---------- */
+.pre { justify-content: center; gap: 22px; }
+.pre .marca { font-size: clamp(2.6rem, 12vw, 3.6rem); }
+.pre .frase-grande { font-size: 1.6rem; font-weight: 700; line-height: 1.2; margin: 0; text-wrap: balance; }
+.pre .pecas .peca { font-size: 1.6rem; }
+
+/* ---------- resumo e final ---------- */
+.resumo, .final { gap: 22px; }
+.res-cab { display: grid; gap: 6px; }
+.res-cab .marca { font-size: clamp(2.6rem, 13vw, 3.8rem); }
+.res-placar { display: flex; align-items: baseline; gap: 12px; font-size: 3rem; line-height: 1; }
+.res-placar .v { color: var(--voce); } .res-placar .r { color: var(--rival); }
+.res-placar .x { font-size: 1.4rem; color: var(--tinta-2); }
+.bloco { display: grid; gap: 10px; }
+.tabela-palavras { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; background: var(--superficie);
+  border-radius: var(--raio); box-shadow: 0 0 0 1px var(--linha); overflow: hidden; }
+.tabela-palavras li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 14px; border-top: 1px solid var(--linha); }
+.tabela-palavras li:first-child { border-top: 0; }
+.tabela-palavras .w { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.tabela-palavras .w .dig { font-weight: 400; color: var(--tinta-2); }
+.tabela-palavras .s { font-family: var(--display); font-weight: 800; font-stretch: 75%; text-align: right; font-variant-numeric: tabular-nums; }
+.tabela-palavras .m { grid-column: 1 / -1; font-size: .85rem; color: var(--tinta-2); }
+.tabela-palavras .Aceita .s { color: var(--voce); }
+.tabela-palavras li.rejeitada .w { color: var(--tinta-2); }
+.tabela-palavras li.rejeitada .w .risco { text-decoration: line-through; }
+.tag { font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 6px; border-radius: 6px;
+  margin-left: 6px; vertical-align: 2px; text-decoration: none; display: inline-block; }
+.tag.Bloqueada { background: var(--rival-suave); color: var(--rival); }
+.tag.usada { background: var(--atencao-suave); color: var(--atencao); }
+.tag.fora { background: var(--erro-suave); color: var(--erro); }
+.contexto { display: grid; gap: 4px; margin: 0; font-size: 1.02rem; }
+.contexto b { font-family: var(--display); font-stretch: 80%; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lados { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.lados .bloco { align-content: start; }
+.ninguem { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.ninguem li { padding: 5px 9px; border-radius: 9px; box-shadow: inset 0 0 0 1.5px var(--linha); background: var(--superficie); font-size: .92rem; }
+.destaque { display: flex; gap: 12px; align-items: center; background: var(--voce-suave); border-radius: var(--raio); padding: 12px 14px; }
+.destaque .num { font-size: 2rem; color: var(--voce); }
+.palavras-rival { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.palavras-rival li { padding: 5px 9px; border-radius: 9px; background: var(--rival-suave); font-weight: 700; font-size: .92rem; }
+.palavras-rival li.perdeu { background: transparent; box-shadow: inset 0 0 0 1.5px var(--linha); color: var(--tinta-2); text-decoration: line-through; font-weight: 400; }
+.acoes { display: grid; gap: 10px; padding-block: 4px 0; }
+.rodadas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.rodadas div { background: var(--superficie); border-radius: 12px; padding: 10px 8px; box-shadow: 0 0 0 1px var(--linha); display: grid; gap: 2px; text-align: center; }
+.rodadas .ganhou { box-shadow: inset 0 0 0 2px var(--voce); }
+.rodadas .perdeu { box-shadow: inset 0 0 0 2px var(--rival); }
+.rodadas .num { font-size: 1.15rem; }
+.compartilhar { background: var(--superficie); border-radius: var(--raio); box-shadow: 0 0 0 1px var(--linha); padding: 14px; display: grid; gap: 10px; }
+.compartilhar pre { margin: 0; font-family: var(--texto); white-space: pre-wrap; font-size: .95rem; user-select: all; }
+.ok-copia { color: var(--ok); font-weight: 700; font-size: .9rem; min-height: 1.3em; margin: 0; }
+.final .marca { font-size: clamp(3.2rem, 16vw, 5rem); }
+.final .marca.vitoria { color: var(--voce); } .final .marca.derrota { color: var(--rival); }
+.estat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.estat div { display: grid; gap: 2px; }
+.estat .num { font-size: 1.6rem; }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- pilhas ---------- */
+.arena { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; padding-block: 10px 4px; }
+.pilha { min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.pilha-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pilha.rival .pilha-cab { flex-direction: row-reverse; }
+.peca-ps { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column-reverse;
+  gap: 4px; align-items: flex-start; padding-top: 6px; border-bottom: 3px solid var(--tinta); }
+.pilha.rival .peca-ps { align-items: flex-end; }
+.peca-p { flex: none; height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 7px; border: 2px solid;
+  border-bottom-width: 4px; font-weight: 700; font-size: .92rem; white-space: nowrap; overflow: hidden; max-width: 100%;
+  width: calc(var(--n, 4) * .6em + 3.4em); animation: cai .34s cubic-bezier(.3, 1.45, .5, 1) both; }
+.peca-p .w { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.peca-p .p { margin-left: auto; font-family: var(--display); font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; }
+.peca-p.voce { background: var(--voce-suave); border-color: var(--voce); color: var(--tinta); }
+.peca-p.voce .p { color: var(--voce); }
+.peca-p.rival { background-color: var(--rival); border-color: var(--rival); color: var(--rival-tinta);
+  background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--rival-suave) 6px 7px); }
+.peca-p.rival .w { visibility: hidden; }
+.peca-p.rival.revelado { background: var(--rival-suave); color: var(--tinta); animation: vira .42s ease both; }
+.peca-p.rival.revelado .w { visibility: visible; }
+.peca-p.rival.revelado .p { color: var(--rival); }
+.peca-p.fantasma { background: transparent; border-style: dashed; border-color: var(--tinta-2); color: var(--tinta-2); font-weight: 400;
+  animation: cai .2s ease both, racha .55s .35s ease-in forwards; }
+.peca-p.fantasma.bloq { border-color: var(--rival); color: var(--rival); }
+.peca-p.fantasma .p { font-family: var(--texto); font-stretch: 100%; font-size: .7rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+.pilha-vazia { color: var(--tinta-2); font-size: .88rem; margin: auto 0 4px; white-space: normal; }
+@keyframes cai { from { transform: translateY(-28px); opacity: 0; } }
+@keyframes racha { 25% { transform: rotate(-5deg); } 70% { opacity: 0; height: 30px; } 100% { transform: translateY(70px) rotate(14deg); opacity: 0; height: 0; border-width: 0; margin-bottom: -4px; } }
+@keyframes vira { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+
+/* ---------- desafio ---------- */
+.desafio { gap: 20px; }
+.desafio .marca { font-size: clamp(2.8rem, 14vw, 4.2rem); }
+.desafio .placar-alvo { display: flex; align-items: baseline; gap: 10px; }
+.desafio .placar-alvo .num { font-size: 3.4rem; line-height: 1; color: var(--rival); }
+.campo-apelido { display: grid; gap: 6px; }
+.campo-apelido input { font: inherit; font-size: 1.05rem; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--linha);
+  background: var(--superficie); color: var(--tinta); min-width: 0; width: 100%; }
+.campo-apelido input:focus { outline: none; border-color: var(--voce); }
+.link-desafio { font-family: var(--texto); font-size: .9rem; word-break: break-all; background: var(--papel); padding: 10px 12px;
+  border-radius: 10px; user-select: all; margin: 0; }
+
+/* ---------- Duelo do Dia ---------- */
+.card-dia { display: grid; gap: 12px; background: var(--superficie); border-radius: var(--raio); padding: 16px;
+  box-shadow: 0 0 0 2px var(--tinta); }
+.card-dia .topo-dia { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.card-dia h2 { margin: 0; font-family: var(--display); font-weight: 900; font-stretch: 70%; text-transform: uppercase; font-size: 1.9rem; line-height: .95; }
+.card-dia p { margin: 0; }
+.card-dia .pecas .peca { font-size: .95rem; }
+.card-dia .estado { font-weight: 700; }
+.card-dia .campo-apelido input { padding: 10px 12px; font-size: 1rem; }
+.selo-teste { font-size: .66rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 6px; border-radius: 6px;
+  background: var(--atencao-suave); color: var(--atencao); }
+.separador { display: flex; align-items: center; gap: 10px; color: var(--tinta-2); }
+.separador::before, .separador::after { content: ''; flex: 1; border-top: 1px solid var(--linha); }
+.modo-dia .lado-placar.rival, .modo-dia .placar > .vs, .modo-dia .cabo, .modo-dia .pilha.rival { display: none; }
+.modo-dia .placar { grid-template-columns: 1fr auto; }
+.modo-dia .arena { grid-template-columns: minmax(0, 1fr); }
+.dia-meta { text-align: right; display: grid; justify-items: end; gap: 2px; }
+.dia-meta .num { font-size: 1.3rem; }
+.comparacao { display: grid; gap: 10px; background: var(--voce-suave); border-radius: var(--raio); padding: 14px 16px; }
+.comparacao .grande { font-family: var(--display); font-weight: 900; font-stretch: 70%; font-size: 2.2rem; line-height: 1; color: var(--voce); }
+.comparacao p { margin: 0; }
+.barra-pct { height: 10px; border-radius: 99px; background: var(--superficie); overflow: hidden; }
+.barra-pct i { display: block; height: 100%; background: var(--voce); border-radius: 99px; transform-origin: left; animation: cresce .8s cubic-bezier(.3,.8,.3,1) both; }
+@keyframes cresce { from { transform: scaleX(0); } }
+.contagem { font-family: var(--display); font-weight: 800; font-stretch: 75%; font-variant-numeric: tabular-nums; }
+.painel-teste { display: grid; gap: 8px; border: 2px dashed var(--atencao); border-radius: var(--raio); padding: 12px; }
+.painel-teste .linha { display: flex; gap: 6px; flex-wrap: wrap; }
+.painel-teste .btn { min-height: 40px; padding: 8px 14px; font-size: .9rem; }
+.rodadas .ponto-dia { font-size: 1.15rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+@media (max-height: 560px) {
+  .lado-placar .pts { font-size: 2rem; }
+  .pista .frase { font-size: 1.05rem; }
+  .relogio { font-size: 1.5rem; }
+  .pista-meio .pecas { display: none; }
+  .peca-p { height: 26px; font-size: .85rem; }
+}
+</style>
+
+<div class="app" id="app">
+
+  <!-- INÍCIO -->
+  <section class="tela rolavel inicio" id="tela-inicio" aria-labelledby="titulo-jogo">
+    <h1 class="marca" id="titulo-jogo"><span>Duelo</span><span class="de">de</span><span>Palavras</span></h1>
+    <section class="card-dia" id="card-dia" aria-labelledby="dia-titulo">
+      <div class="topo-dia"><span class="rotulo" id="dia-rotulo">Duelo do Dia</span><span class="selo-teste" id="dia-teste" hidden>Modo de teste</span></div>
+      <h2 id="dia-titulo">Carregando o duelo de hoje…</h2>
+      <p id="dia-texto">Quatro pistas iguais para todo mundo. Uma tentativa por dia, sem adversária.</p>
+      <div class="pecas" id="dia-pecas" aria-hidden="true"></div>
+      <div class="campo-apelido" id="dia-apelido-campo" hidden>
+        <label class="rotulo" for="dia-apelido">Apelido (opcional)</label>
+        <input id="dia-apelido" maxlength="24" autocomplete="nickname" placeholder="como você quer aparecer">
+      </div>
+      <p class="estado" id="dia-estado" aria-live="polite"></p>
+      <button class="btn btn-primario btn-largo" id="btn-dia" type="button" hidden>Jogar o duelo de hoje</button>
+    </section>
+    <div class="separador rotulo">Partida livre</div>
+    <div class="vs-demo" aria-hidden="true">
+      <span class="lado"><span class="ponto voce"></span>Você</span>
+      <span class="vs">VS</span>
+      <span class="lado"><span class="ponto rival"></span>Adversário</span>
+    </div>
+    <ul class="regras">
+      <li><span class="ic">4</span><span>Quatro rodadas de um minuto. Cada rodada tem uma pista.</span></li>
+      <li><span class="ic">Aa</span><span>Digite palavras que atendam à pista e aperte Enter. Pode digitar sem acento.</span></li>
+      <li><span class="ic">⏱</span><span>Se o adversário usar a palavra antes, ela fica com ele. Plural e conjugação da mesma palavra não contam de novo.</span></li>
+      <li><span class="ic">+8</span><span>Palavras maiores valem mais: 1, 3, 5 ou 8 pontos.</span></li>
+    </ul>
+    <fieldset class="niveis">
+      <legend class="rotulo">Dificuldade</legend>
+      <div class="nivel"><input type="radio" name="nivel" id="nivel-facil" value="facil"><label for="nivel-facil"><b>Fácil</b><small>Pistas abertas, rival tranquilo</small></label></div>
+      <div class="nivel"><input type="radio" name="nivel" id="nivel-medio" value="medio" checked><label for="nivel-medio"><b>Médio</b><small>Pistas mais justas</small></label></div>
+      <div class="nivel"><input type="radio" name="nivel" id="nivel-dificil" value="dificil"><label for="nivel-dificil"><b>Difícil</b><small>Pistas apertadas, rival rápido</small></label></div>
+    </fieldset>
+    <div class="acoes">
+      <button class="btn btn-primario btn-largo" id="btn-jogar" type="button">Jogar</button>
+      <p class="erro-carga" id="erro-carga" hidden></p>
+      <p class="aviso">Versão de teste. O adversário é simulado e aparece identificado durante o jogo.</p>
+    </div>
+  </section>
+
+  <!-- ANTES DA RODADA -->
+  <section class="tela rolavel pre" id="tela-pre" hidden aria-labelledby="pre-titulo">
+    <div class="rotulo" id="pre-rodada">Rodada 1 de 4</div>
+    <h2 class="marca" id="pre-titulo">Encontre palavras que</h2>
+    <p class="frase-grande" id="pre-frase"></p>
+    <div class="pecas" id="pre-pecas" aria-hidden="true"></div>
+    <p class="aviso" id="pre-dica"></p>
+    <div class="vs-demo" id="pre-rival"></div>
+    <button class="btn btn-primario btn-largo" id="btn-valendo" type="button">Valendo!</button>
+  </section>
+
+  <!-- RODADA -->
+  <section class="tela" id="tela-rodada" hidden aria-label="Rodada em andamento">
+    <div class="topo">
+      <div class="linha-topo"><span class="rotulo" id="rod-num">Rodada 1/4</span><span class="rotulo" id="rod-nivel">Médio</span></div>
+      <div class="placar">
+        <div class="lado-placar voce"><span class="quem"><span class="ponto voce"></span>Você</span><span class="pts num" id="pts-voce" aria-live="off">0</span></div>
+        <span class="vs">VS</span>
+        <div class="lado-placar rival"><span class="quem"><span id="nome-rival">Ana</span><span class="selo">Simulado</span></span><span class="pts num" id="pts-rival">0</span></div>
+      </div>
+      <div class="cabo" aria-hidden="true"><i id="cabo"></i></div>
+    </div>
+    <div class="pista" role="group" aria-label="Pista da rodada">
+      <span class="rotulo">Encontre palavras que</span>
+      <div class="pista-meio">
+        <p class="frase" id="rod-frase"></p>
+        <span class="relogio num" id="relogio" role="timer" aria-label="Tempo restante">1:00</span>
+      </div>
+      <p class="dica" id="rod-dica" hidden></p>
+      <div class="barra-tempo" id="barra-tempo"><i id="barra"></i></div>
+    </div>
+    <div class="arena" id="arena" aria-label="Palavras da rodada">
+      <div class="pilha voce">
+        <div class="pilha-cab"><span class="rotulo">Você</span><span class="rotulo" id="cont-palavras">0 palavras</span></div>
+        <div class="blocos" id="pilha-voce" role="list" aria-label="Suas palavras"><p class="pilha-vazia" id="feed-vazio">Digite e aperte Enter. Suas palavras empilham aqui.</p></div>
+      </div>
+      <div class="pilha rival">
+        <div class="pilha-cab"><span class="rotulo" id="nome-rival-2">Ana</span><span class="rotulo" id="cont-rival">0 palavras</span></div>
+        <div class="blocos" id="pilha-rival" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="campo">
+      <div class="retorno" id="retorno" aria-live="polite" aria-atomic="true"><span class="dica-enter">Enter envia. O campo continua ativo.</span></div>
+      <form class="form" id="form" autocomplete="off">
+        <label for="entrada" class="so-leitor">Palavra</label>
+        <input id="entrada" name="entrada" type="text" inputmode="text" enterkeyhint="send" autocomplete="off" autocorrect="off"
+               autocapitalize="none" spellcheck="false" maxlength="40" placeholder="digite uma palavra">
+        <button class="btn btn-primario" id="btn-enviar" type="submit">Enviar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- RESUMO DA RODADA -->
+  <section class="tela rolavel resumo" id="tela-resumo" hidden aria-labelledby="res-titulo"></section>
+
+  <!-- DESAFIO RECEBIDO -->
+  <section class="tela rolavel desafio" id="tela-desafio" hidden aria-labelledby="des-titulo">
+    <span class="rotulo" id="des-rotulo">Desafio</span>
+    <h2 class="marca" id="des-titulo">Abrindo o desafio…</h2>
+    <p id="des-texto"></p>
+    <div class="placar-alvo" id="des-alvo" hidden><span class="num" id="des-pontos">0</span><span class="rotulo" id="des-pontos-rotulo">pontos na partida original</span></div>
+    <ul class="regras" id="des-regras" hidden>
+      <li><span class="ic">4</span><span>As mesmas quatro pistas, na mesma ordem.</span></li>
+      <li><span class="ic">⏱</span><span>As palavras da outra pessoa entram no mesmo segundo em que ela digitou. Quem usou primeiro fica com a palavra.</span></li>
+    </ul>
+    <div class="acoes">
+      <button class="btn btn-primario btn-largo" id="btn-aceitar" type="button" hidden>Aceitar desafio</button>
+      <button class="btn btn-secundario btn-largo" id="btn-des-voltar" type="button">Jogar contra o simulado</button>
+    </div>
+  </section>
+
+  <!-- FINAL -->
+  <section class="tela rolavel final" id="tela-final" hidden aria-labelledby="fin-titulo"></section>
+</div>
+
+<script src="motor.js"></script>
+<script src="config.js"></script>
+<script src="armazenamento.js"></script>
+<script>
+(function () {
+'use strict';
+var M = window.Motor;
+var DURACAO = 60000, RODADAS = 4;
+
+// ---------- catálogo v0.5: [id, família, nível] ----------
+// Gerado de motor-lexical/catalogo_v05.py (mesma lista do dados/catalogo.json). Não editar à mão.
+var CATALOGO = [["N05","inicio","facil"],["N01","inicio","medio"],["N07","inicio","medio"],["N11","inicio","medio"],["I01","inicio","medio"],["I05","inicio","medio"],["N13","inicio","dificil"],["I02","inicio","dificil"],["N08","fim","facil"],["F06","fim","facil"],["N14","fim","medio"],["F01","fim","medio"],["F07","fim","medio"],["F03","fim","dificil"],["F04","fim","dificil"],["N03","tamanho","facil"],["N10","tamanho","facil"],["T01","tamanho","facil"],["N06","tamanho","medio"],["N09","contem","facil"],["N16","contem","medio"],["C01","contem","medio"],["C05","contem","medio"],["C06","contem","medio"],["C07","contem","medio"],["N12","contem","dificil"],["N19","contem","dificil"],["N20","contem","dificil"],["C02","contem","dificil"],["C03","contem","dificil"],["C04","contem","dificil"],["E01","sem","facil"],["E02","sem","facil"],["E06","sem","medio"],["P02","posicao","facil"],["P04","posicao","facil"],["P05","posicao","facil"],["P01","posicao","medio"],["P03","posicao","dificil"],["K01","contagem","facil"],["N17","contagem","medio"],["K03","contagem","dificil"],["M01","combinacao","medio"],["M02","combinacao","medio"],["M05","combinacao","medio"],["M04","combinacao","dificil"],["M06","combinacao","dificil"],["N15","combinacao","dificil"],["R01","padrao","facil"],["N18","padrao","medio"],["R02","padrao","medio"],["R03","padrao","dificil"]];
+var FAMILIA_NOME = { inicio: 'Início', fim: 'Fim', tamanho: 'Tamanho', contem: 'Letras dentro', sem: 'Sem a letra',
+  posicao: 'Posição', contagem: 'Contagem', combinacao: 'Combinação', padrao: 'Padrão' };
+var FAMILIA_DE = {}; CATALOGO.forEach(function (x) { FAMILIA_DE[x[0]] = x[1]; });
+var POOL = { facil: [], medio: [], dificil: [] };
+CATALOGO.forEach(function (x) { POOL[x[2]].push(x[0]); });
+
+// Sorteio: quatro famílias diferentes; dentro de cada família, a pista que este navegador viu há mais tempo.
+// O histórico fica só no navegador (per-viewer, pode sumir). Desafio por link não passa por aqui.
+var MEMORIA_RECENTES = 40;
+function lerRecentes() { try { var x = JSON.parse(localStorage.getItem('duelo-recentes') || '[]'); return Array.isArray(x) ? x : []; } catch (e) { return []; } }
+function guardarRecentes(ids) {
+  try { localStorage.setItem('duelo-recentes', JSON.stringify(ids.concat(lerRecentes().filter(function (x) { return ids.indexOf(x) < 0; })).slice(0, MEMORIA_RECENTES))); } catch (e) {}
+}
+function sortearPistas(nivel, r) {
+  var recentes = lerRecentes();
+  var idade = function (id) { var k = recentes.indexOf(id); return k < 0 ? 1e9 : k; };   // maior = visto há mais tempo
+  var porFam = {};
+  POOL[nivel].forEach(function (id) { (porFam[FAMILIA_DE[id]] = porFam[FAMILIA_DE[id]] || []).push(id); });
+  // cada família oferece a pista vista há mais tempo (empate: sorteio)
+  var ofertas = Object.keys(porFam).map(function (f) {
+    var ids = embaralhar(r, porFam[f]).sort(function (a, b) { return idade(b) - idade(a); });
+    return { fam: f, id: ids[0], idade: idade(ids[0]), sorte: r() };
+  });
+  // famílias com pista inédita ou antiga primeiro; o resto por sorteio
+  ofertas.sort(function (a, b) { return (b.idade - a.idade) || (a.sorte - b.sorte); });
+  var escolha = ofertas.slice(0, RODADAS).map(function (o) { return o.id; });
+  return embaralhar(r, escolha);
+}
+
+var PECAS = { N01: ['M', '…'], N03: ['·', '·', '·', '·', '·'], N05: ['P', '…'], N06: ['·', '·', '·', '·'], N07: ['C', 'A', '…'],
+  N08: ['…', 'Ã', 'O'], N09: ['…', 'R', '…', 'R', '…'], N10: ['·', '·', '·', '·', '·', '·', '·'], N11: ['R', 'E', '…'],
+  N12: ['…', 'C', 'H', '…'], N13: ['D', 'E', 'S', '…'], N14: ['…', 'Ç', 'Ã', 'O'], N15: ['R', 'E', '…', '8+'],
+  N16: ['…', 'P', '…', 'T', '…'], N17: ['A', '…', 'A', '…', 'A'], N18: ['…', '★', '★', '…'], N19: ['…', 'L', 'H', '…'], N20: ['…', 'N', 'H', '…'],
+  I01: ['B', '…'], I02: ['T', 'R', '…'], I05: ['F', '…'], F01: ['…', 'L'], F03: ['…', 'D', 'A', 'D', 'E'], F04: ['…', 'E', 'I', 'R', 'O'],
+  F06: ['…', 'R'], F07: ['…', 'U'], T01: ['·', '·', '·', '·', '·', '·'], C01: ['…', 'Z', '…'], C02: ['…', 'X', '…'], C03: ['…', 'J', '…'],
+  C04: ['…', 'Q', 'U', '…'], C05: ['…', 'Ç', '…'], C06: ['…', 'V', '…', 'L', '…'], C07: ['…', 'B', '…', 'R', '…'],
+  E01: ['·', '·', '·', '·', '·', '·', '~A'], E02: ['~A', '~E'], E06: ['~A', '~O'],
+  P01: ['·', 'U', '…'], P02: ['·', '·', 'R', '…'], P03: ['·', 'L', '…'], P04: ['★', '…', '★'], P05: ['·', 'I', '…'],
+  K01: ['…', 'O', '…', 'O', '…'], M01: ['C', '…', 'O'], M02: ['P', '…', 'A'], M04: ['M', '…', 'O'], M06: ['T', '…', '7+'],
+  R03: ['A', 'E', 'I', 'O', 'U'] };
+var NIVEL_NOME = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil', dia: 'Duelo do Dia' };
+// Adversários simulados: três perfis simples, calibrados a olho (pendente de dados reais).
+var RIVAIS = {
+  facil:   { nome: 'Lia',   zMin: 4.0, n: [5, 8],   inicio: [3500, 6500] },
+  medio:   { nome: 'Ana',   zMin: 3.5, n: [8, 12], inicio: [2500, 4500] },
+  dificil: { nome: 'Bento', zMin: 3.0, n: [12, 17], inicio: [1800, 3200] }
+};
+
+// ---------- utilidades ----------
+function $(id) { return document.getElementById(id); }
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function entre(r, a, b) { return a + Math.floor(r() * (b - a + 1)); }
+function embaralhar(r, xs) { xs = xs.slice(); for (var i = xs.length - 1; i > 0; i--) { var j = Math.floor(r() * (i + 1)); var t = xs[i]; xs[i] = xs[j]; xs[j] = t; } return xs; }
+function seg1(t) { return (t / 1000).toFixed(1).replace('.', ','); }
+function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+function mostrar(id) { ['tela-inicio', 'tela-pre', 'tela-rodada', 'tela-resumo', 'tela-final', 'tela-desafio'].forEach(function (t) { $(t).hidden = t !== id; });
+  var tela = $(id); if (tela.scrollTop) tela.scrollTop = 0; }
+
+// ---------- dados (JSON; descomprime se vier em gzip) ----------
+var cacheDados = {};
+async function baixar(caminho) {
+  var resp = await fetch(caminho);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' em ' + caminho);
+  var buf = new Uint8Array(await resp.arrayBuffer());
+  if (buf[0] === 0x1f && buf[1] === 0x8b) {   // ainda comprimido: o servidor não descomprimiu
+    var ds = new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
+    return await new Response(ds).text();
+  }
+  return new TextDecoder().decode(buf);
+}
+function carregarPista(id) {
+  if (!cacheDados[id]) cacheDados[id] = baixar('dados/' + id + '.json').then(JSON.parse);
+  return cacheDados[id];
+}
+var existe = null, existeCarga = null, existeMemo = new Map();
+function carregarExiste() {
+  // filtro de existência (Bloom) em base64: a hospedagem não serve binário
+  if (!existeCarga) existeCarga = Promise.all([baixar('dados/existe.txt'), baixar('dados/existe.json').then(JSON.parse)])
+    .then(function (x) { var bin = atob(x[0].trim()), u = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      existe = new M.Existe(u, x[1]); return existe; });
+  return existeCarga;
+}
+async function consultarExiste(norm) {
+  if (existeMemo.has(norm)) return;
+  try { await carregarExiste(); existeMemo.set(norm, await existe.tem(norm)); }
+  catch (e) { existeMemo.set(norm, null); }
+}
+function existeSinc(norm) { return existeMemo.get(norm) === true; }
+
+// ---------- adversário simulado ----------
+function gerarRival(pista, perfil, r) {
+  var pool = pista.bot.filter(function (b) { return b[1] >= perfil.zMin; });
+  if (pool.length < 30) pool = pista.bot.slice(0, Math.max(30, pool.length));
+  // sorteio ponderado pela frequência: palavras mais comuns saem mais
+  var pesos = pool.map(function (b) { return Math.pow(b[1] - perfil.zMin + 1.2, 2); });
+  var n = entre(r, perfil.n[0], perfil.n[1]), escolhidas = [], usados = new Set();
+  while (escolhidas.length < n && usados.size < pool.length) {
+    var tot = 0, i; for (i = 0; i < pool.length; i++) if (!usados.has(i)) tot += pesos[i];
+    var x = r() * tot; for (i = 0; i < pool.length; i++) { if (usados.has(i)) continue; x -= pesos[i]; if (x <= 0) break; }
+    i = Math.min(i, pool.length - 1); usados.add(i); escolhidas.push(pool[i][0]);
+  }
+  // ritmo: começo com rajada, meio com hesitações, fim apertado
+  var t = entre(r, perfil.inicio[0], perfil.inicio[1]), fim = 58500, seq = [];
+  var media = (fim - t) / Math.max(1, escolhidas.length);
+  escolhidas.forEach(function (w, k) {
+    if (t > fim) return;
+    seq.push([Math.round(t), w]);
+    var fase = k / escolhidas.length;
+    var fator = fase < .25 ? .6 : fase < .7 ? (r() < .25 ? 2.2 : 1) : .85;
+    t += media * fator * (.55 + r() * .9);
+  });
+  return seq;
+}
+
+// ---------- estado do jogo ----------
+var jogo = null, rod = null;
+
+function novoJogo(nivel, desafio, dia) {
+  var seed = (Date.now() ^ (Math.random() * 1e9)) | 0, r = rng(seed);
+  var ids = dia ? dia.duelo.pistas.slice() : desafio ? desafio.pistas : sortearPistas(nivel, r);
+  if (!desafio && !dia) guardarRecentes(ids);
+  var rival = dia ? { nome: '', selo: '' } : desafio ? { nome: desafio.apelido, selo: 'Gravado' } : { nome: RIVAIS[nivel].nome, selo: 'Simulado', perfil: RIVAIS[nivel] };
+  jogo = { nivel: dia ? 'dia' : nivel, seed: seed, r: r, ids: ids, pistas: [], rodadas: [], i: 0, rival: rival, desafio: desafio || null, dia: dia || null };
+  $('app').classList.toggle('modo-dia', !!dia);
+}
+async function comecarJogo(nivel, desafio, btn, rotulo) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Preparando as pistas…'; }
+  $('erro-carga').hidden = true;
+  novoJogo(nivel, desafio);
+  try {
+    jogo.pistas = await Promise.all(jogo.ids.map(carregarPista));
+    carregarExiste().catch(function () {});
+    prepararRodada();
+  } catch (e) {
+    mostrar('tela-inicio');
+    $('erro-carga').textContent = 'Não consegui baixar as pistas (' + e.message + '). Confira a conexão e tente de novo.';
+    $('erro-carga').hidden = false;
+  } finally { if (btn) { btn.disabled = false; btn.textContent = rotulo; } }
+}
+
+$('btn-jogar').addEventListener('click', function () {
+  var nivel = document.querySelector('input[name="nivel"]:checked').value;
+  try { localStorage.setItem('duelo-nivel', nivel); } catch (e) {}
+  if (location.hash) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
+  $('app').classList.remove('modo-dia');
+  comecarJogo(nivel, null, this, 'Jogar');
+});
+try { var salvo = localStorage.getItem('duelo-nivel'); if (salvo && $('nivel-' + salvo)) $('nivel-' + salvo).checked = true; } catch (e) {}
+
+function desenharPecas(alvo, id) {
+  alvo.textContent = '';
+  (PECAS[id] || []).forEach(function (c) {
+    var riscada = c.charAt(0) === '~';
+    var p = el('span', 'peca' + (c === '…' || c === '·' ? ' fantasma' : '') + (riscada ? ' riscada' : ''), c === '·' ? '' : riscada ? c.slice(1) : c);
+    alvo.appendChild(p);
+  });
+}
+
+function prepararRodada() {
+  var p = jogo.pistas[jogo.i];
+  $('pre-rodada').textContent = 'Rodada ' + (jogo.i + 1) + ' de ' + RODADAS + (FAMILIA_DE[p.id] ? ' · ' + FAMILIA_NOME[FAMILIA_DE[p.id]] : '');
+  $('pre-frase').textContent = p.pista;
+  $('pre-dica').textContent = p.dica || '';
+  $('pre-dica').hidden = !p.dica;
+  desenharPecas($('pre-pecas'), p.id);
+  var pr = $('pre-rival'); pr.textContent = '';
+  if (jogo.dia) {
+    pr.appendChild(el('span', 'ponto voce')); pr.appendChild(el('span', null, 'Duelo do Dia #' + jogo.dia.duelo.numero + ' · tentativa oficial'));
+    if (jogo.i === 0 && !jogo.dia.partida) pr.appendChild(el('span', 'selo', 'Conta a partir daqui'));
+  } else {
+    pr.appendChild(el('span', 'ponto rival')); pr.appendChild(el('span', null, 'Contra ' + jogo.rival.nome));
+    pr.appendChild(el('span', 'selo', jogo.rival.selo));
+  }
+  mostrar('tela-pre');
+  $('btn-valendo').focus();
+}
+
+$('btn-valendo').addEventListener('click', function () { if (jogo.dia) valendoDia(this); else iniciarRodada(); });
+
+// retomada (Duelo do Dia): jaDecorrido = ms que já passaram no relógio do servidor; entradas = o que foi digitado antes
+function iniciarRodada(jaDecorrido, entradas) {
+  var p = jogo.pistas[jogo.i];
+  var seqRival = jogo.dia ? [] : jogo.desafio ? jogo.desafio.rodadas[jogo.i] : gerarRival(p, jogo.rival.perfil, jogo.r);
+  rod = { pista: p, entradasVoce: (entradas || []).slice(), rival: seqRival, inicio: performance.now() - (jaDecorrido || 0), pausado: 0,
+          pausaEm: null, acabou: false, res: null, ultimoRival: 0, ptsAntes: { voce: 0, rival: 0 } };
+  $('rod-num').textContent = 'Rodada ' + (jogo.i + 1) + '/' + RODADAS;
+  $('rod-nivel').textContent = jogo.dia ? 'Duelo do Dia #' + jogo.dia.duelo.numero : NIVEL_NOME[jogo.nivel];
+  $('rod-frase').textContent = p.pista;
+  $('rod-dica').textContent = p.dica || ''; $('rod-dica').hidden = !p.dica;
+  $('nome-rival').textContent = jogo.rival.nome; $('nome-rival-2').textContent = jogo.rival.nome;
+  document.querySelector('#tela-rodada .selo').textContent = jogo.rival.selo;
+  limparPilhas();
+  $('pts-voce').textContent = '0'; $('pts-rival').textContent = '0'; $('cabo').style.width = '50%';
+  $('retorno').innerHTML = '<span class="dica-enter">Enter envia. O campo continua ativo.</span>';
+  $('relogio').classList.remove('fim'); $('barra-tempo').classList.remove('fim');
+  var inp = $('entrada'); inp.disabled = false; inp.value = ''; $('btn-enviar').disabled = false;
+  mostrar('tela-rodada');
+  if (rod.entradasVoce.length) atualizar(decorrido());
+  inp.focus({ preventScroll: true });
+  requestAnimationFrame(tique);
+}
+
+function decorrido() {
+  var agora = rod.pausaEm != null ? rod.pausaEm : performance.now();
+  return Math.min(DURACAO, Math.max(0, agora - rod.inicio - rod.pausado));
+}
+
+// pausa se a pessoa sair da aba (o rival também para)
+document.addEventListener('visibilitychange', function () {
+  if (!rod || rod.acabou) return;
+  if (jogo && jogo.dia) { if (!document.hidden) requestAnimationFrame(tique); return; }
+  if (document.hidden) rod.pausaEm = performance.now();
+  else if (rod.pausaEm != null) { rod.pausado += performance.now() - rod.pausaEm; rod.pausaEm = null; requestAnimationFrame(tique); }
+});
+
+function resolverAte(t) {
+  var rivalAte = rod.rival.filter(function (x) { return x[0] <= t; });
+  var partidas = { 'Você': rod.entradasVoce, rival: rivalAte };
+  return M.resolver(partidas, rod.pista, existeSinc);
+}
+
+function tique() {
+  if (!rod || rod.acabou || rod.pausaEm != null) return;
+  var t = decorrido();
+  var resta = Math.ceil((DURACAO - t) / 1000);
+  $('relogio').textContent = Math.floor(resta / 60) + ':' + String(resta % 60).padStart(2, '0');
+  $('barra').style.transform = 'scaleX(' + (1 - t / DURACAO) + ')';
+  var fim = resta <= 10;
+  $('relogio').classList.toggle('fim', fim); $('barra-tempo').classList.toggle('fim', fim);
+  var chegou = rod.rival.filter(function (x) { return x[0] <= t; }).length;
+  if (chegou !== rod.ultimoRival) { rod.ultimoRival = chegou; atualizar(t); }
+  if (t >= DURACAO) { encerrarRodada(); return; }
+  requestAnimationFrame(tique);
+}
+
+function atualizar(t) {
+  rod.res = resolverAte(t);
+  var pv = rod.res.placar['Você'] || 0, pr = rod.res.placar.rival || 0;
+  pontuar($('pts-voce'), pv, 'voce'); pontuar($('pts-rival'), pr, 'rival');
+  var tot = pv + pr; $('cabo').style.width = (tot ? (pv / tot) * 100 : 50) + '%';
+  desenharPilhas();
+}
+function pontuar(alvo, v, quem) {
+  if (String(v) !== alvo.textContent) {
+    alvo.textContent = v; alvo.classList.remove('bump'); void alvo.offsetWidth; alvo.classList.add('bump');
+  }
+}
+
+// ---------- pilhas: cada palavra aceita vira uma peça; as da rival entram viradas ----------
+var pecasNaPilha = new Map();
+function limparPilhas() {
+  pecasNaPilha = new Map();
+  $('pilha-voce').textContent = ''; $('pilha-rival').textContent = '';
+  var v = el('p', 'pilha-vazia', 'Digite e aperte Enter. Suas palavras empilham aqui.'); v.id = 'feed-vazio';
+  $('pilha-voce').appendChild(v);
+  $('cont-palavras').textContent = '0 palavras'; $('cont-rival').textContent = '0 palavras';
+}
+function novaPeca(classe, texto, letras, pontosTxt) {
+  var b = el('div', 'peca-p ' + classe);
+  b.style.setProperty('--n', Math.min(letras, 14));
+  b.appendChild(el('span', 'w', texto)); b.appendChild(el('span', 'p', pontosTxt));
+  return b;
+}
+function desenharPilhas() {
+  var cont = { 'Você': 0, rival: 0 };
+  rod.res.entradas.forEach(function (e) {
+    if (e.status !== 'Aceita') return;
+    cont[e.jogador]++;
+    var chave = e.jogador + '|' + e.t + '|' + e.digitado;
+    if (pecasNaPilha.has(chave)) return;
+    var voce = e.jogador === 'Você';
+    var b = novaPeca(voce ? 'voce' : 'rival', voce ? e.digitado.toLowerCase() : e.leitura, M.sa(e.leitura).length, '+' + e.pontos);
+    b.dataset.chave = chave;
+    if (voce) { b.setAttribute('role', 'listitem'); b.setAttribute('aria-label', e.digitado + ', mais ' + e.pontos + ' pontos'); }
+    pecasNaPilha.set(chave, b);
+    (voce ? $('pilha-voce') : $('pilha-rival')).appendChild(b);
+  });
+  var vazio = $('feed-vazio'); if (vazio) vazio.hidden = cont['Você'] > 0;
+  $('cont-palavras').textContent = cont['Você'] + (cont['Você'] === 1 ? ' palavra' : ' palavras');
+  $('cont-rival').textContent = cont.rival + (cont.rival === 1 ? ' palavra' : ' palavras');
+}
+// palavra recusada: peça tracejada que racha e cai
+function pecaQueCai(e) {
+  var bloq = e.status === 'Bloqueada';
+  var b = novaPeca('fantasma' + (bloq ? ' bloq' : ''), e.digitado.toLowerCase(), M.sa(e.digitado).length, ROTULO_CURTO[e.status] || '');
+  b.setAttribute('aria-hidden', 'true');
+  $('pilha-voce').appendChild(b);
+  setTimeout(function () { b.remove(); }, 1000);
+}
+// fim da rodada: as peças da rival desviram
+function revelarRival() {
+  var pecas = Array.prototype.slice.call($('pilha-rival').children);
+  pecas.forEach(function (b, k) { b.style.animationDelay = (k * 70) + 'ms'; b.classList.add('revelado'); });
+  return pecas.length;
+}
+var ROTULO_CURTO = { 'Bloqueada': 'bloqueada', 'Já usada': 'já usada', 'Fora da pista': 'fora', 'Não encontrada': '?', 'Não permitida': '×', 'Empate': 'empate' };
+
+// ---------- envio ----------
+var enviando = Promise.resolve();
+$('form').addEventListener('submit', function (ev) {
+  ev.preventDefault();
+  var inp = $('entrada'), texto = inp.value.trim();
+  if (!rod || rod.acabou || !texto) { inp.focus(); return; }
+  var t = Math.round(decorrido());
+  enviando = enviando.then(async function () {
+    var norm = texto.toLowerCase();
+    if (!M.leituras(rod.pista, norm)) await consultarExiste(norm);
+    if (rod.acabou) return;
+    rod.entradasVoce.push([t, texto]);
+    if (jogo.dia) guardarRascunho();
+    atualizar(Math.max(t, decorrido()));
+    var minha = rod.res.entradas.filter(function (e) { return e.jogador === 'Você' && e.t === t && e.digitado === texto; })[0];
+    retornar(minha, inp);
+  });
+  inp.focus({ preventScroll: true });
+});
+// impede que tocar no botão tire o foco do campo (teclado do celular fecharia)
+$('btn-enviar').addEventListener('pointerdown', function (e) { e.preventDefault(); });
+
+function retornar(e, inp) {
+  var r = $('retorno'); r.textContent = '';
+  var msg, cls;
+  if (!e) return;
+  switch (e.status) {
+    case 'Aceita': msg = '+' + e.pontos + ' · ' + e.digitado.toLowerCase(); cls = 'ok'; break;
+    case 'Bloqueada': msg = 'Bloqueada · ' + jogo.rival.nome + ' usou antes'; cls = 'bloq'; break;
+    case 'Já usada': msg = 'Já usada'; cls = 'atencao'; break;
+    case 'Empate': msg = 'Empate com ' + jogo.rival.nome + ' · ninguém pontua'; cls = 'atencao'; break;
+    case 'Fora da pista': msg = 'Fora da pista'; cls = 'erro'; break;
+    case 'Não encontrada': msg = existeMemo.get(e.digitado.toLowerCase()) === null ? 'Não vale nesta rodada' : 'Não encontrada'; cls = 'erro'; break;
+    default: msg = 'Use só letras, 3 ou mais'; cls = 'erro';
+  }
+  r.appendChild(el('span', 'msg ' + cls, msg));
+  if (e.status !== 'Aceita') pecaQueCai(e);
+  if (e.status === 'Aceita') { inp.value = ''; }
+  else {
+    inp.classList.remove('treme'); void inp.offsetWidth; inp.classList.add('treme');
+    if (e.status === 'Já usada' || e.status === 'Bloqueada' || e.status === 'Empate') inp.value = '';
+    else inp.select();
+  }
+}
+
+// ---------- fim de rodada ----------
+async function encerrarRodada() {
+  rod.acabou = true;
+  var inp = $('entrada'); inp.disabled = true; $('btn-enviar').disabled = true; inp.blur();
+  await enviando;
+  rod.res = resolverAte(DURACAO);
+  desenharPilhas();
+  jogo.rodadas.push({ pista: rod.pista, res: rod.res, minhas: rod.entradasVoce.slice() });
+  $('relogio').textContent = '0:00';
+  if (jogo.dia) { salvarRodadaDia(); return; }
+  var n = revelarRival();
+  var reduzido = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(mostrarResumo, reduzido ? 900 : Math.min(2600, 1100 + n * 70));
+}
+
+function textoMotivo(e) {
+  if (e.status === 'Bloqueada') {
+    var d = e.bloqueadoPor;
+    return jogo.rival.nome + ' usou ' + d.leitura + ' aos ' + seg1(d.t) + ' s' + (d.digitado.toLowerCase() !== d.leitura ? ' (digitou ' + d.digitado + ')' : '') + '.';
+  }
+  if (e.status === 'Já usada') return e.motivo === 'mesma entrada digitada de novo' ? 'Você já tinha digitado isso.' : 'Mesma palavra que ' + e.motivo.replace('mesma palavra que ', '') + '.';
+  if (e.status === 'Fora da pista') return 'Existe, mas não atende à pista.';
+  if (e.status === 'Não encontrada') return 'Não está na nossa base.';
+  if (e.status === 'Empate') return 'Vocês dois digitaram no mesmo instante.';
+  if (e.status === 'Não permitida') return 'Só letras, com 3 ou mais.';
+  return '';
+}
+var TAG = { 'Bloqueada': ['Bloqueada', 'Bloqueada'], 'Já usada': ['Já usada', 'usada'], 'Fora da pista': ['Fora', 'fora'],
+  'Não encontrada': ['Não encontrada', 'fora'], 'Não permitida': ['Não permitida', 'fora'], 'Empate': ['Empate', 'usada'] };
+
+function mostrarResumo() {
+  var R = rod.res, n = jogo.i + 1, s = $('tela-resumo'); s.textContent = '';
+  var pv = R.placar['Você'] || 0, pr = R.placar.rival || 0;
+  var cab = el('div', 'res-cab');
+  cab.appendChild(el('span', 'rotulo', 'Fim da rodada ' + n + ' de ' + RODADAS + ' · ' + rod.pista.pista));
+  var tit = el('h2', 'marca', jogo.dia ? 'Rodada ' + n + ' feita' : pv > pr ? 'Rodada sua' : pv < pr ? 'Rodada de ' + jogo.rival.nome : 'Rodada empatada'); tit.id = 'res-titulo';
+  cab.appendChild(tit);
+  var pl = el('div', 'res-placar num');
+  pl.appendChild(el('span', 'v', pv));
+  if (jogo.dia) pl.appendChild(el('span', 'x', 'pontos'));
+  else { pl.appendChild(el('span', 'x', '×')); pl.appendChild(el('span', 'r', pr)); }
+  cab.appendChild(pl); s.appendChild(cab);
+  if (jogo.dia && jogo.dia.avisoSalvar) s.appendChild(el('p', 'erro-carga', jogo.dia.avisoSalvar));
+
+  var minhas = R.entradas.filter(function (e) { return e.jogador === 'Você'; });
+  var aceitas = minhas.filter(function (e) { return e.status === 'Aceita'; });
+  var dele0 = R.entradas.filter(function (e) { return e.jogador === 'rival'; });
+  var voceBloqueou = dele0.filter(function (e) { return e.status === 'Bloqueada'; }).length;
+  var foiBloqueada = minhas.filter(function (e) { return e.status === 'Bloqueada'; }).length;
+  var ctx = el('p', 'contexto');
+  var l1 = el('span'); l1.appendChild(document.createTextNode('Mais de ')); l1.appendChild(el('b', null, rod.pista.bot.length.toLocaleString('pt-BR')));
+  l1.appendChild(document.createTextNode(' palavras comuns valiam nesta pista.')); ctx.appendChild(l1);
+  var frases = [];
+  if (voceBloqueou) frases.push('Você bloqueou ' + jogo.rival.nome + ' ' + voceBloqueou + (voceBloqueou === 1 ? ' vez' : ' vezes'));
+  if (foiBloqueada) frases.push(jogo.rival.nome + ' bloqueou você ' + foiBloqueada + (foiBloqueada === 1 ? ' vez' : ' vezes'));
+  if (frases.length) ctx.appendChild(el('span', null, frases.join('. ') + '.'));
+  s.appendChild(ctx);
+  if (aceitas.length) {
+    var melhor = aceitas.slice().sort(function (a, b) { return b.pontos - a.pontos || M.sa(b.leitura).length - M.sa(a.leitura).length || a.t - b.t; })[0];
+    var d = el('div', 'destaque'); d.appendChild(el('span', 'num', '+' + melhor.pontos));
+    var dd = el('div'); dd.appendChild(el('div', 'rotulo', 'Sua melhor palavra')); dd.appendChild(el('strong', null, melhor.leitura));
+    d.appendChild(dd); s.appendChild(d);
+  }
+  var b1 = el('div', 'bloco');
+  b1.appendChild(el('h3', 'rotulo', 'Suas palavras · ' + aceitas.length + ' de ' + minhas.length + ' valeram'));
+  if (minhas.length) {
+    var ul = el('ul', 'tabela-palavras');
+    minhas.forEach(function (e) {
+      var li = el('li', e.status === 'Aceita' ? 'Aceita' : 'rejeitada');
+      var w = el('span', 'w');
+      var canon = e.status === 'Aceita' ? e.leitura : e.digitado.toLowerCase();
+      w.appendChild(e.status === 'Aceita' ? document.createTextNode(canon) : el('span', 'risco', canon));
+      if (e.status === 'Aceita' && e.digitado.toLowerCase() !== e.leitura) w.appendChild(el('span', 'dig', ' · digitou ' + e.digitado.toLowerCase()));
+      if (e.status !== 'Aceita') w.appendChild(el('span', 'tag ' + TAG[e.status][1], TAG[e.status][0]));
+      li.appendChild(w);
+      li.appendChild(el('span', 's', e.status === 'Aceita' ? '+' + e.pontos : '0'));
+      var mt = el('span', 'm', seg1(e.t) + ' s' + (e.status === 'Aceita' ? '' : ' · ' + textoMotivo(e)));
+      li.appendChild(mt);
+      ul.appendChild(li);
+    });
+    b1.appendChild(ul);
+  } else b1.appendChild(el('p', 'vazio', 'Você não enviou palavras nesta rodada.'));
+  s.appendChild(b1);
+
+  var usadas = new Set();
+  R.entradas.forEach(function (e) { if (e.leitura) usadas.add(M.sa(e.leitura)); usadas.add(M.sa(e.digitado.toLowerCase())); });
+  var ninguem = rod.pista.bot.map(function (x) { return x[0]; }).filter(function (w) { return !usadas.has(M.sa(w)); });
+  var sorteio = rng(jogo.seed + jogo.i * 7919), escolha = [];
+  var faixa = ninguem.slice(0, 120);
+  while (escolha.length < 5 && faixa.length) escolha.push(faixa.splice(Math.floor(sorteio() * faixa.length), 1)[0]);
+  var lados = el('div', 'lados');
+  var bn = el('div', 'bloco');
+  bn.appendChild(el('h3', 'rotulo', jogo.dia ? 'Comuns que você não usou' : 'Comuns que ninguém usou'));
+  var un = el('ul', 'ninguem'); escolha.forEach(function (w) { un.appendChild(el('li', null, w)); }); bn.appendChild(un);
+  lados.appendChild(bn);
+  if (jogo.dia) lados.style.gridTemplateColumns = 'minmax(0, 1fr)';
+  var dele = dele0;
+  var b2 = el('div', 'bloco');
+  b2.appendChild(el('h3', 'rotulo', 'O que ' + jogo.rival.nome + ' jogou'));
+  var ur = el('ul', 'palavras-rival');
+  dele.forEach(function (e) {
+    var li = el('li', e.status === 'Aceita' ? '' : 'perdeu', e.status === 'Aceita' ? e.leitura + ' +' + e.pontos : e.digitado);
+    if (e.status !== 'Aceita') li.title = e.status === 'Bloqueada' ? 'Você usou antes' : e.status;
+    ur.appendChild(li);
+  });
+  b2.appendChild(ur);
+  var bloqueiosSeus = dele.filter(function (e) { return e.status === 'Bloqueada'; }).length;
+  if (bloqueiosSeus) b2.appendChild(el('p', 'aviso', 'Riscadas: você usou antes.'));
+  if (!jogo.dia) lados.appendChild(b2);
+  s.appendChild(lados);
+
+  var ac = el('div', 'acoes');
+  var ultima = jogo.i + 1 >= RODADAS;
+  var bt = el('button', 'btn btn-primario btn-largo', ultima ? 'Ver resultado' : 'Próxima rodada'); bt.type = 'button';
+  bt.addEventListener('click', function () { if (ultima) { if (jogo.dia) concluirDia(bt); else mostrarFinal(); } else { jogo.i++; prepararRodada(); } });
+  ac.appendChild(bt); s.appendChild(ac);
+  mostrar('tela-resumo');
+  bt.focus({ preventScroll: true });
+}
+
+// ---------- resultado final ----------
+function mostrarFinal() {
+  var s = $('tela-final'); s.textContent = '';
+  var tv = 0, tr = 0, aceitas = 0, bloqueadas = 0, maior = '';
+  jogo.rodadas.forEach(function (x) {
+    tv += x.res.placar['Você'] || 0; tr += x.res.placar.rival || 0;
+    x.res.entradas.forEach(function (e) {
+      if (e.jogador !== 'Você') return;
+      if (e.status === 'Aceita') { aceitas++; if (M.sa(e.leitura).length > M.sa(maior).length) maior = e.leitura; }
+      if (e.status === 'Bloqueada') bloqueadas++;
+    });
+  });
+  var res = tv > tr ? 'vitoria' : tv < tr ? 'derrota' : 'empate';
+  var cab = el('div', 'res-cab');
+  var quem = jogo.rival.nome + ' (' + jogo.rival.selo.toLowerCase() + ')';
+  cab.appendChild(el('span', 'rotulo', 'Duelo de Palavras · ' + NIVEL_NOME[jogo.nivel] + ' · contra ' + quem));
+  var t = el('h2', 'marca ' + res, res === 'vitoria' ? 'Vitória' : res === 'derrota' ? 'Derrota' : 'Empate'); t.id = 'fin-titulo';
+  cab.appendChild(t);
+  var pl = el('div', 'res-placar num'); pl.appendChild(el('span', 'v', tv)); pl.appendChild(el('span', 'x', '×')); pl.appendChild(el('span', 'r', tr));
+  cab.appendChild(pl);
+  cab.appendChild(el('p', 'aviso', res === 'empate' ? 'Mesma pontuação.' : (res === 'vitoria' ? 'Você venceu por ' : jogo.rival.nome + ' venceu por ') + Math.abs(tv - tr) + ' pontos.'));
+  s.appendChild(cab);
+
+  var rd = el('div', 'rodadas');
+  jogo.rodadas.forEach(function (x, i) {
+    var a = x.res.placar['Você'] || 0, b = x.res.placar.rival || 0;
+    var c = el('div', a > b ? 'ganhou' : a < b ? 'perdeu' : '');
+    c.appendChild(el('span', 'rotulo', 'R' + (i + 1)));
+    c.appendChild(el('span', 'num', a + '×' + b));
+    rd.appendChild(c);
+  });
+  s.appendChild(rd);
+
+  var es = el('div', 'estat');
+  [[aceitas, 'palavras valeram'], [bloqueadas, 'bloqueadas pelo rival'], [maior ? M.sa(maior).length : 0, 'letras na maior']].forEach(function (x) {
+    var d = el('div'); d.appendChild(el('span', 'num', x[0])); d.appendChild(el('span', 'rotulo', x[1])); es.appendChild(d);
+  });
+  s.appendChild(es);
+  if (maior) s.appendChild(el('p', 'aviso', 'Sua maior palavra: ' + maior + '.'));
+
+  // compartilhar: sem revelar palavras
+  var linhas = ['Duelo de Palavras · ' + NIVEL_NOME[jogo.nivel],
+    res === 'vitoria' ? 'Venci ' + quem + ' por ' + (tv - tr) + ' pontos' : res === 'derrota' ? 'Perdi para ' + quem + ' por ' + (tr - tv) + ' pontos' : 'Empatei com ' + quem];
+  jogo.rodadas.forEach(function (x, i) { var a = x.res.placar['Você'] || 0, b = x.res.placar.rival || 0;
+    linhas.push((a > b ? '🟦' : a < b ? '🟧' : '⬜') + ' R' + (i + 1) + '  ' + a + ' × ' + b); });
+  linhas.push('Total ' + tv + ' × ' + tr + ' · ' + aceitas + ' palavras');
+  linhas.push('Consegue me vencer?');
+  var textoComp = linhas.join('\n');
+  var comp = el('div', 'compartilhar');
+  comp.appendChild(el('span', 'rotulo', 'Compartilhar resultado'));
+  var pre = el('pre', null, textoComp); pre.id = 'texto-compartilhar'; comp.appendChild(pre);
+  var bc = el('button', 'btn btn-secundario btn-largo', 'Copiar resultado'); bc.type = 'button';
+  var okc = el('p', 'ok-copia'); okc.setAttribute('aria-live', 'polite');
+  bc.addEventListener('click', function () {
+    var feito = function () { okc.textContent = 'Copiado. Cole onde quiser compartilhar.'; };
+    var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
+      okc.textContent = 'Texto selecionado. Copie com o menu do aparelho.'; };
+    try { navigator.clipboard.writeText(textoComp).then(feito, falha); } catch (e) { falha(); }
+  });
+  comp.appendChild(bc); comp.appendChild(okc);
+  // Desafio por link depende do armazenamento do Claude; fora dele, o bloco não aparece.
+  if (jogo.desafio) s.appendChild(blocoRespostaDesafio(tv, tr));
+  else if (window.claude && claude.use) s.appendChild(blocoCriarDesafio(tv, linhas));
+  s.appendChild(comp);
+
+  var ac = el('div', 'acoes');
+  var bj = el('button', 'btn btn-primario btn-largo', 'Jogar de novo'); bj.type = 'button';
+  bj.addEventListener('click', function () { if (jogo.desafio) { mostrar('tela-inicio'); } else $('btn-jogar').click(); });
+  if (jogo.desafio) bj.textContent = 'Jogar contra o simulado';
+  var bm = el('button', 'btn btn-secundario btn-largo', 'Trocar dificuldade'); bm.type = 'button';
+  bm.addEventListener('click', function () { mostrar('tela-inicio'); });
+  ac.appendChild(bj); ac.appendChild(bm); s.appendChild(ac);
+  mostrar('tela-final');
+}
+
+// ---------- desafio por link (armazenamento compartilhado do artifact) ----------
+// Endereço do próprio jogo, onde quer que esteja publicado (Netlify ou Claude).
+var LINK_BASE = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : 'https://claude.ai/artifact/AJ8Ruq2g9WeQZ4N5tzniAe';
+var PISTAS_VALIDAS = new Set(CATALOGO.map(function (x) { return x[0]; }));   // desafios antigos continuam válidos: nenhuma pista saiu
+var dbPromessa = null;
+function pegarDb() {
+  if (!dbPromessa) dbPromessa = (window.claude && claude.use ? claude.use('db') : Promise.resolve(null)).catch(function () { return null; });
+  return dbPromessa;
+}
+function comPrazo(p, ms) { return Promise.race([p, new Promise(function (_, rej) { setTimeout(function () { rej({ code: 'tempo' }); }, ms); })]); }
+function lerApelido() { try { return localStorage.getItem('duelo-apelido') || ''; } catch (e) { return ''; } }
+function limparApelido(t) { return String(t || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 24); }
+
+// a gravação vem de outra pessoa: só entra se tiver o formato esperado
+function validarDesafio(d) {
+  if (!d || typeof d !== 'object') return null;
+  var nivel = POOL[d.nivel] ? d.nivel : null;
+  if (!nivel || !Array.isArray(d.pistas) || d.pistas.length !== RODADAS || !Array.isArray(d.rodadas) || d.rodadas.length !== RODADAS) return null;
+  if (!d.pistas.every(function (id) { return PISTAS_VALIDAS.has(id); })) return null;
+  var rodadas = d.rodadas.map(function (r) {
+    var ent = r && Array.isArray(r.entradas) ? r.entradas.slice(0, 300) : [];
+    return ent.filter(function (x) { return x && typeof x.w === 'string' && x.w.length <= 40 && typeof x.t === 'number' && x.t >= 0 && x.t <= DURACAO; })
+              .map(function (x) { return [Math.round(x.t), x.w]; });
+  });
+  return { nivel: nivel, pistas: d.pistas.slice(), rodadas: rodadas, apelido: limparApelido(d.apelido) || 'Alguém',
+           total: typeof d.total === 'number' ? d.total : null };
+}
+
+function blocoCriarDesafio(total, linhas) {
+  var box = el('div', 'compartilhar');
+  box.appendChild(el('span', 'rotulo', 'Desafiar alguém com esta partida'));
+  box.appendChild(el('p', 'aviso', 'Quem abrir o link joga as mesmas pistas contra as suas palavras, no mesmo tempo em que você digitou.'));
+  var campo = el('div', 'campo-apelido');
+  var lb = el('label', 'rotulo', 'Seu apelido no desafio'); lb.htmlFor = 'apelido';
+  var inp = document.createElement('input'); inp.id = 'apelido'; inp.maxLength = 24; inp.autocomplete = 'nickname';
+  inp.placeholder = 'como vão te ver'; inp.value = lerApelido();
+  campo.appendChild(lb); campo.appendChild(inp); box.appendChild(campo);
+  var bt = el('button', 'btn btn-primario btn-largo', 'Criar link de desafio'); bt.type = 'button';
+  var msg = el('p', 'aviso'); msg.setAttribute('aria-live', 'polite');
+  box.appendChild(bt); box.appendChild(msg);
+  bt.addEventListener('click', async function () {
+    var apelido = limparApelido(inp.value);
+    if (!apelido) { msg.textContent = 'Escreva um apelido para a outra pessoa saber quem desafiou.'; inp.focus(); return; }
+    try { localStorage.setItem('duelo-apelido', apelido); } catch (e) {}
+    bt.disabled = true; bt.textContent = 'Salvando a partida…'; msg.textContent = '';
+    var db = await pegarDb();
+    if (!db) { bt.disabled = false; bt.textContent = 'Criar link de desafio';
+      msg.textContent = 'O desafio precisa do armazenamento da página, que só funciona com a página aberta no Claude, com a conta conectada.'; return; }
+    var doc = { versao: 1, motor: 'v0.4', criado: Date.now(), apelido: apelido, nivel: jogo.nivel, pistas: jogo.ids.slice(), total: total,
+      rodadas: jogo.rodadas.map(function (x) { return { entradas: x.minhas.map(function (m) { return { t: m[0], w: m[1] }; }) }; }) };
+    try {
+      var ref = db.collection('desafios').doc();
+      await comPrazo(ref.set(doc), 12000);
+      var link = LINK_BASE + '#d-' + ref.id;
+      box.textContent = '';
+      box.appendChild(el('span', 'rotulo', 'Desafio criado'));
+      var pre = el('p', 'link-desafio', link); box.appendChild(pre);
+      var texto = linhas.slice(0, -1).concat(['Consegue me vencer? ' + link]).join('\n');
+      var bc = el('button', 'btn btn-primario btn-largo', 'Copiar convite com o link'); bc.type = 'button';
+      var ok = el('p', 'ok-copia'); ok.setAttribute('aria-live', 'polite');
+      bc.addEventListener('click', function () {
+        var feito = function () { ok.textContent = 'Copiado. Mande para quem você quer desafiar.'; };
+        var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
+          ok.textContent = 'Link selecionado. Copie com o menu do aparelho.'; };
+        try { navigator.clipboard.writeText(texto).then(feito, falha); } catch (e) { falha(); }
+      });
+      box.appendChild(bc); box.appendChild(ok);
+      box.appendChild(el('p', 'aviso', 'Quem receber precisa conseguir abrir esta página: compartilhe o jogo pelo menu Compartilhar do Claude.'));
+    } catch (e) {
+      bt.disabled = false; bt.textContent = 'Criar link de desafio';
+      msg.textContent = e && e.code === 'invalid_argument'
+        ? 'Nesta versão de teste, só a dona do jogo consegue criar desafios. Você ainda pode jogar os desafios que receber.'
+        : e && e.code === 'quota_exceeded' ? 'O espaço de desafios encheu. Avise quem cuida do jogo.'
+        : 'Não consegui salvar agora. Tente de novo em instantes.';
+    }
+  });
+  return box;
+}
+
+function blocoRespostaDesafio(tv, tr) {
+  var box = el('div', 'compartilhar');
+  var d = jogo.desafio;
+  box.appendChild(el('span', 'rotulo', 'Desafio de ' + d.apelido));
+  box.appendChild(el('p', null, tv > tr ? 'Você bateu a partida de ' + d.apelido + '. Mande o resultado para ela saber.'
+    : tv < tr ? d.apelido + ' segurou a partida. Dá para tentar de novo pelo mesmo link.' : 'Empate exato com ' + d.apelido + '.'));
+  // tenta guardar a resposta; no plano atual só quem pode gravar consegue, e tudo bem se não der
+  pegarDb().then(function (db) {
+    if (!db || !d.id) return;
+    var apelido = lerApelido();
+    return comPrazo(db.collection('desafios/' + d.id + '/respostas').add({ criado: Date.now(), apelido: apelido || null, voce: tv, rival: tr }), 12000);
+  }).catch(function () {});
+  return box;
+}
+
+async function abrirDesafio(id) {
+  mostrar('tela-desafio');
+  $('des-titulo').textContent = 'Abrindo o desafio…'; $('des-texto').textContent = '';
+  $('des-alvo').hidden = true; $('des-regras').hidden = true; $('btn-aceitar').hidden = true;
+  var db = await pegarDb();
+  if (!db) {
+    $('des-titulo').textContent = 'Desafio indisponível';
+    $('des-texto').textContent = 'Para jogar um desafio, abra este link no Claude com a sua conta conectada.';
+    return;
+  }
+  var d = null;
+  try { var snap = await comPrazo(db.doc('desafios/' + id).get(), 10000); d = snap.exists ? validarDesafio(snap.data()) : null; }
+  catch (e) {
+    $('des-titulo').textContent = 'Não consegui abrir';
+    $('des-texto').textContent = 'O desafio não carregou agora. Confira a conexão e abra o link de novo.';
+    return;
+  }
+  if (!d) {
+    $('des-titulo').textContent = 'Desafio não encontrado';
+    $('des-texto').textContent = 'O link pode estar incompleto ou o desafio foi apagado. Peça um link novo para quem te desafiou.';
+    return;
+  }
+  d.id = id;
+  $('des-rotulo').textContent = 'Desafio · ' + NIVEL_NOME[d.nivel];
+  $('des-titulo').textContent = d.apelido + ' te desafiou';
+  $('des-texto').textContent = 'Quatro rodadas de um minuto contra a partida que ' + d.apelido + ' gravou.';
+  if (d.total != null) { $('des-pontos').textContent = d.total; $('des-pontos-rotulo').textContent = 'pontos de ' + d.apelido + ' na partida original'; $('des-alvo').hidden = false; }
+  $('des-regras').hidden = false;
+  var bt = $('btn-aceitar'); bt.hidden = false;
+  bt.onclick = function () { comecarJogo(d.nivel, d, bt, 'Aceitar desafio'); };
+  bt.focus({ preventScroll: true });
+}
+$('btn-des-voltar').addEventListener('click', function () {
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  mostrar('tela-inicio');
+});
+function rotear() {
+  if (location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
+  var m = /^#d-([A-Za-z0-9_-]{4,80})$/.exec(location.hash || '');
+  if (m && !(rod && !rod.acabou)) abrirDesafio(m[1]);
+}
+window.addEventListener('hashchange', rotear);
+rotear();
+
+// ================= Duelo do Dia =================
+// Todo acesso a dados passa por Armazenamento (armazenamento.js): Supabase quando config.js tem as
+// chaves, armazenamento de teste no navegador quando não tem (caso do Claude). Nada aqui usa o Claude.
+var banco = window.Armazenamento.criar(window.DUELO_CONFIG || {});
+var diaEstado = null, relogioDia = null;
+var MSG_ERRO = { partida_expirada: 'O prazo de 15 minutos da sua tentativa acabou.', sem_duelo_hoje: 'Não há duelo marcado para hoje.',
+  sem_conexao: 'Sem conexão com o banco agora.', sem_sessao: 'Não consegui abrir uma sessão anônima.' };
+function msgErro(e) { return MSG_ERRO[e && e.codigo] || 'Algo deu errado (' + ((e && (e.codigo || e.message)) || 'erro') + ').'; }
+function offsetServidor(x) { return x && x.agora ? Date.parse(x.agora) - Date.now() : 0; }
+function agoraServidor() { return Date.now() + ((diaEstado && diaEstado.offset) || 0); }
+
+// segundos até a meia-noite de Brasília
+function segundosAteAmanha() {
+  var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
+    .formatToParts(new Date(agoraServidor()));
+  var g = function (t) { return +p.find(function (x) { return x.type === t; }).value; };
+  return 86400 - (g('hour') * 3600 + g('minute') * 60 + g('second'));
+}
+function hms(s) { var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60; return h + ':' + String(m).padStart(2, '0') + ':' + String(x).padStart(2, '0'); }
+function ligarContagem(alvo, prefixo) {
+  clearInterval(relogioDia);
+  var f = function () { if (!document.body.contains(alvo)) { clearInterval(relogioDia); return; } alvo.textContent = prefixo + hms(Math.max(0, segundosAteAmanha())); };
+  f(); relogioDia = setInterval(f, 1000);
+}
+
+// rascunho da rodada em curso: sobrevive a fechar ou recarregar a página
+function chaveRascunho() { return 'duelo-dia-rascunho'; }
+function guardarRascunho() {
+  try { localStorage.setItem(chaveRascunho(), JSON.stringify({ partida: jogo.dia.partida.id, rodada: jogo.i, entradas: rod.entradasVoce })); } catch (e) {}
+}
+function lerRascunho(partidaId, rodada) {
+  try { var x = JSON.parse(localStorage.getItem(chaveRascunho())); if (x && x.partida === partidaId && x.rodada === rodada) return x.entradas || []; } catch (e) {}
+  return [];
+}
+function limparRascunho() { try { localStorage.removeItem(chaveRascunho()); } catch (e) {} }
+
+async function carregarCardDia() {
+  $('dia-teste').hidden = banco.tipo !== 'teste';
+  try {
+    var h = await banco.hoje();
+    diaEstado = { duelo: h.duelo, partida: h.partida, offset: offsetServidor(h) };
+  } catch (e) {
+    $('dia-titulo').textContent = 'Duelo do Dia'; $('dia-estado').textContent = msgErro(e); $('btn-dia').hidden = true; return;
+  }
+  var d = diaEstado.duelo, p = diaEstado.partida, bt = $('btn-dia');
+  if (!d) { $('dia-titulo').textContent = 'Sem duelo hoje'; $('dia-texto').textContent = 'Volte amanhã.'; bt.hidden = true; return; }
+  $('dia-rotulo').textContent = 'Duelo do Dia · ' + d.data.split('-').reverse().join('/');
+  $('dia-titulo').textContent = 'Duelo #' + d.numero;
+  desenharPecasDia(d.pistas);
+  $('dia-apelido').value = lerApelido();
+  $('dia-apelido-campo').hidden = !!p;
+  bt.hidden = false; bt.disabled = false;
+  if (!p) { $('dia-estado').textContent = ''; bt.textContent = 'Jogar o duelo de hoje'; }
+  else if (p.status === 'iniciada') {
+    var resta = Math.max(0, Math.round((Date.parse(p.prazo) - agoraServidor()) / 60000));
+    $('dia-estado').textContent = 'Sua tentativa está em andamento: rodada ' + Math.min(4, p.rodada_atual + 1) + ' de 4, ' + resta + ' min de prazo.';
+    bt.textContent = 'Continuar a tentativa';
+  } else if (p.status === 'concluida') {
+    $('dia-estado').textContent = 'Você fez ' + p.pontos + ' pontos hoje. ';
+    var c = el('span', 'contagem'); $('dia-estado').appendChild(c); ligarContagem(c, 'Próximo em ');
+    bt.textContent = 'Ver meu resultado';
+  } else {
+    $('dia-estado').textContent = 'Sua tentativa de hoje terminou sem as quatro rodadas. ';
+    var c2 = el('span', 'contagem'); $('dia-estado').appendChild(c2); ligarContagem(c2, 'Próximo em ');
+    bt.hidden = true;
+  }
+}
+function desenharPecasDia(ids) {
+  var a = $('dia-pecas'); a.textContent = '';
+  ids.forEach(function (id) { var f = FAMILIA_DE[id]; a.appendChild(el('span', 'peca fantasma', f ? FAMILIA_NOME[f] : '')); });
+}
+
+$('btn-dia').addEventListener('click', async function () {
+  var bt = this, p = diaEstado && diaEstado.partida;
+  if (p && p.status === 'concluida') { mostrarFinalDia(p, null); return; }
+  bt.disabled = true; bt.textContent = 'Preparando as pistas…';
+  var ap = limparApelido($('dia-apelido').value); if (ap) { try { localStorage.setItem('duelo-apelido', ap); } catch (e) {} }
+  novoJogo('dia', null, { duelo: diaEstado.duelo, partida: p, apelido: ap });
+  try {
+    jogo.pistas = await Promise.all(jogo.ids.map(carregarPista));
+    carregarExiste().catch(function () {});
+  } catch (e) {
+    bt.disabled = false; bt.textContent = 'Tentar de novo'; $('dia-estado').textContent = 'Não consegui baixar as pistas. Confira a conexão.'; return;
+  }
+  if (p && p.status === 'iniciada') retomarDia(p); else prepararRodada();
+  bt.disabled = false;
+});
+
+// "Valendo!" no Duelo do Dia: a tentativa começa (no servidor) na primeira rodada; cada rodada marca seu início no servidor
+async function valendoDia(bt) {
+  bt.disabled = true;
+  try {
+    if (!jogo.dia.partida) {
+      jogo.dia.partida = await banco.iniciar(jogo.dia.apelido);
+      diaEstado.partida = jogo.dia.partida;
+      if (jogo.dia.partida.status !== 'iniciada' || jogo.dia.partida.rodada_atual !== 0) { bt.disabled = false; retomarDia(jogo.dia.partida); return; }
+    }
+    var p = await banco.comecarRodada(jogo.dia.partida.id, jogo.i);
+    jogo.dia.partida = p; diaEstado.offset = offsetServidor(p);
+    var ja = Math.max(0, agoraServidor() - Date.parse(p.rodada_inicio));
+    iniciarRodada(Math.min(ja, DURACAO), lerRascunho(p.id, jogo.i));
+  } catch (e) {
+    $('pre-dica').hidden = false; $('pre-dica').textContent = msgErro(e);
+    if (e.codigo === 'partida_expirada') { setTimeout(function () { mostrar('tela-inicio'); carregarCardDia(); }, 1800); }
+  } finally { bt.disabled = false; }
+}
+
+// Retomar: refaz as rodadas já salvas (para o resultado final) e continua de onde parou.
+function retomarDia(p) {
+  jogo.dia.partida = p;
+  jogo.rodadas = (p.rodadas || []).map(function (ent, k) {
+    var minhas = ent.map(function (x) { return [x.t, x.w]; });
+    return { pista: jogo.pistas[k], res: M.resolver({ 'Você': minhas, rival: [] }, jogo.pistas[k], existeSinc), minhas: minhas };
+  });
+  jogo.i = p.rodada_atual;
+  if (p.status !== 'iniciada') { mostrar('tela-inicio'); carregarCardDia(); return; }
+  if (p.rodada_atual >= RODADAS) { concluirDia(null); return; }
+  if (p.rodada_inicio) {
+    var ja = agoraServidor() - Date.parse(p.rodada_inicio), entradas = lerRascunho(p.id, jogo.i);
+    if (ja < DURACAO - 1500) { iniciarRodada(ja, entradas); return; }
+    // a rodada terminou com a página fechada: vale o que foi digitado até ali
+    rod = { pista: jogo.pistas[jogo.i], entradasVoce: entradas.filter(function (x) { return x[0] <= DURACAO; }), rival: [], inicio: performance.now() - DURACAO,
+            pausado: 0, pausaEm: null, acabou: true, res: null };
+    rod.res = resolverAte(DURACAO);
+    jogo.rodadas.push({ pista: rod.pista, res: rod.res, minhas: rod.entradasVoce.slice() });
+    salvarRodadaDia(); return;
+  }
+  prepararRodada();
+}
+
+async function salvarRodadaDia() {
+  var k = jogo.i, R = rod.res, pontos = R.placar['Você'] || 0;
+  var entradas = rod.entradasVoce.map(function (x) { return { t: x[0], w: x[1] }; });
+  jogo.dia.avisoSalvar = null;
+  for (var tent = 0; tent < 3; tent++) {
+    try {
+      jogo.dia.partida = await banco.salvarRodada(jogo.dia.partida.id, k, entradas, pontos);
+      limparRascunho(); break;
+    } catch (e) {
+      if (e.codigo === 'rodada_fora_de_ordem') break;                     // já estava salva (retomada)
+      if (e.codigo === 'partida_expirada' || tent === 2) { jogo.dia.avisoSalvar = msgErro(e) + ' Esta rodada não foi registrada.'; break; }
+      await new Promise(function (ok) { setTimeout(ok, 800 * (tent + 1)); });
+    }
+  }
+  setTimeout(mostrarResumo, 700);
+}
+
+async function concluirDia(bt) {
+  if (bt) { bt.disabled = true; bt.textContent = 'Registrando o resultado…'; }
+  var p = jogo.dia.partida, resumo = null;
+  try { p = await banco.concluir(p.id); jogo.dia.partida = p; diaEstado.partida = p; }
+  catch (e) { if (bt) { bt.disabled = false; bt.textContent = 'Tentar de novo'; } jogo.dia.avisoSalvar = msgErro(e);
+    if (e.codigo !== 'partida_expirada') { var s = $('tela-resumo'); s.appendChild(el('p', 'erro-carga', msgErro(e))); return; } }
+  try { resumo = await banco.resumo(p.data); } catch (e) { resumo = null; }
+  mostrarFinalDia(p, resumo);
+}
+
+async function mostrarFinalDia(p, resumo) {
+  var s = $('tela-final'); s.textContent = '';
+  $('app').classList.add('modo-dia');
+  var d = diaEstado.duelo;
+  if (!resumo) { try { resumo = await banco.resumo(p.data); } catch (e) {} }
+  var pontos = p.pontos != null ? p.pontos : (p.pontos_rodadas || []).reduce(function (a, b) { return a + b; }, 0);
+  var porRodada = p.pontos_rodadas || [];
+  var cab = el('div', 'res-cab');
+  cab.appendChild(el('span', 'rotulo', 'Duelo do Dia #' + d.numero + ' · ' + d.data.split('-').reverse().join('/')));
+  var t = el('h2', 'marca vitoria', p.status === 'concluida' ? pontos + ' pontos' : 'Tentativa encerrada'); t.id = 'fin-titulo';
+  cab.appendChild(t);
+  if (p.pontos_status === 'provisoria') cab.appendChild(el('p', 'aviso', 'Pontuação provisória: ainda não conferida pelo servidor com o motor do jogo.'));
+  s.appendChild(cab);
+
+  // comparação com quem jogou o mesmo duelo
+  var cmp = el('div', 'comparacao');
+  if (resumo && resumo.participantes) {
+    if (resumo.acima_de != null) {
+      cmp.appendChild(el('span', 'rotulo', 'Entre quem jogou hoje'));
+      cmp.appendChild(el('span', 'grande', 'Acima de ' + resumo.acima_de + '%'));
+      var b = el('div', 'barra-pct'); var i = el('i'); i.style.width = Math.max(2, resumo.acima_de) + '%'; b.appendChild(i); cmp.appendChild(b);
+    } else {
+      cmp.appendChild(el('span', 'rotulo', 'Entre quem jogou hoje'));
+      cmp.appendChild(el('span', 'grande', 'Entre os primeiros'));
+      cmp.appendChild(el('p', null, 'A comparação em porcentagem aparece quando ' + (resumo.minimo_percentil || 20) + ' pessoas tiverem terminado o duelo de hoje.'));
+    }
+    cmp.appendChild(el('p', null, resumo.participantes + (resumo.participantes === 1 ? ' pessoa terminou' : ' pessoas terminaram') +
+      (resumo.media != null ? ' · média de ' + String(resumo.media).replace('.', ',') + ' pontos' : '')));
+    if (resumo.simulados) cmp.appendChild(el('p', 'aviso', 'Modo de teste: ' + resumo.simulados + ' participantes simulados, só para ver a tela. No banco real, só contam pessoas.'));
+  } else cmp.appendChild(el('p', null, 'Ainda não consegui buscar a comparação com quem jogou hoje.'));
+  s.appendChild(cmp);
+
+  var rd = el('div', 'rodadas');
+  for (var k = 0; k < RODADAS; k++) {
+    var c = el('div'); c.appendChild(el('span', 'rotulo', 'R' + (k + 1)));
+    c.appendChild(el('span', 'num ponto-dia', porRodada[k] != null ? porRodada[k] : '–'));
+    rd.appendChild(c);
+  }
+  s.appendChild(rd);
+
+  // estatísticas só quando a partida foi jogada nesta página (há palavras para contar)
+  if (jogo && jogo.dia && jogo.rodadas.length) {
+    var aceitas = 0, maior = '';
+    jogo.rodadas.forEach(function (x) { x.res.entradas.forEach(function (e) {
+      if (e.jogador === 'Você' && e.status === 'Aceita') { aceitas++; if (M.sa(e.leitura).length > M.sa(maior).length) maior = e.leitura; } }); });
+    var es = el('div', 'estat');
+    [[aceitas, 'palavras valeram'], [maior ? M.sa(maior).length : 0, 'letras na maior'], [jogo.rodadas.length, 'rodadas']].forEach(function (x) {
+      var dv = el('div'); dv.appendChild(el('span', 'num', x[0])); dv.appendChild(el('span', 'rotulo', x[1])); es.appendChild(dv); });
+    s.appendChild(es);
+    if (maior) s.appendChild(el('p', 'aviso', 'Sua maior palavra: ' + maior + '.'));
+  }
+
+  // compartilhar: pontos por rodada, sem palavras
+  var maxR = Math.max.apply(null, porRodada.concat([1]));
+  var linhas = ['Duelo de Palavras · Duelo do Dia #' + d.numero, pontos + ' pontos' + (resumo && resumo.acima_de != null ? ' · acima de ' + resumo.acima_de + '% de quem jogou' : '')];
+  porRodada.forEach(function (v, k) { var q = Math.round(5 * v / maxR); linhas.push('R' + (k + 1) + ' ' + '🟦'.repeat(q) + '⬜'.repeat(5 - q) + ' ' + v); });
+  linhas.push('Jogue o de hoje: ' + LINK_BASE + '#dia');
+  var textoComp = linhas.join('\n');
+  var comp = el('div', 'compartilhar');
+  comp.appendChild(el('span', 'rotulo', 'Compartilhar resultado'));
+  var pre = el('pre', null, textoComp); comp.appendChild(pre);
+  var bc = el('button', 'btn btn-primario btn-largo', 'Copiar resultado'); bc.type = 'button';
+  var okc = el('p', 'ok-copia'); okc.setAttribute('aria-live', 'polite');
+  bc.addEventListener('click', function () {
+    var feito = function () { okc.textContent = 'Copiado. Cole onde quiser compartilhar.'; };
+    var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
+      okc.textContent = 'Texto selecionado. Copie com o menu do aparelho.'; };
+    try { navigator.clipboard.writeText(textoComp).then(feito, falha); } catch (e) { falha(); }
+  });
+  comp.appendChild(bc); comp.appendChild(okc);
+  s.appendChild(comp);
+
+  var prox = el('p', 'aviso'); var cc = el('span', 'contagem'); prox.appendChild(cc); s.appendChild(prox); ligarContagem(cc, 'Próximo duelo em ');
+
+  var ac = el('div', 'acoes');
+  var bl = el('button', 'btn btn-secundario btn-largo', 'Jogar uma partida livre'); bl.type = 'button';
+  bl.addEventListener('click', function () { $('app').classList.remove('modo-dia'); mostrar('tela-inicio'); carregarCardDia(); });
+  ac.appendChild(bl); s.appendChild(ac);
+
+  if (banco.tipo === 'teste') s.appendChild(painelTeste());
+  mostrar('tela-final');
+}
+
+// Só no modo de teste: ver a tela com poucos ou muitos participantes, e jogar de novo
+function painelTeste() {
+  var box = el('div', 'painel-teste');
+  box.appendChild(el('span', 'rotulo', 'Modo de teste (some no banco real)'));
+  var l1 = el('div', 'linha');
+  [0, 8, 40].forEach(function (n) {
+    var b = el('button', 'btn btn-secundario', n + ' simulados'); b.type = 'button';
+    b.addEventListener('click', async function () { banco.simulados = n; mostrarFinalDia(diaEstado.partida, await banco.resumo(diaEstado.partida.data)); });
+    l1.appendChild(b);
+  });
+  box.appendChild(l1);
+  var ap = el('button', 'btn btn-secundario', 'Apagar minha tentativa de teste'); ap.type = 'button';
+  ap.addEventListener('click', async function () { await banco.apagarHoje(); limparRascunho(); $('app').classList.remove('modo-dia'); mostrar('tela-inicio'); carregarCardDia(); });
+  box.appendChild(ap);
+  return box;
+}
+
+carregarCardDia();
+
+// ---------- teclado do celular: a área do jogo acompanha a parte visível da tela ----------
+function ajustarAltura() {
+  var vv = window.visualViewport;
+  var h = vv ? vv.height : window.innerHeight;
+  var cs = getComputedStyle(document.documentElement);
+  var pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+  document.documentElement.style.setProperty('--alt', Math.max(320, h - pad) + 'px');
+  window.scrollTo(0, 0);
+}
+if (window.visualViewport) { visualViewport.addEventListener('resize', ajustarAltura); visualViewport.addEventListener('scroll', ajustarAltura); }
+window.addEventListener('resize', ajustarAltura);
+ajustarAltura();
+
+// gancho para testes automatizados (encerra a rodada atual); não aparece na interface
+window.__duelo = { get jogo() { return jogo; }, get rod() { return rod; }, encerrar: function () { if (rod && !rod.acabou) { rod.inicio -= DURACAO; } } };
+})();
+</script>
+
+</body></html>

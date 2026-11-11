@@ -1,0 +1,370 @@
+{
+ "motor": "lexico v0.4",
+ "catalogo": "v0.5",
+ "pistas": [
+  {
+   "id": "N05",
+   "familia": "inicio",
+   "nivel": "facil",
+   "pista": "começam com P",
+   "dica": ""
+  },
+  {
+   "id": "N01",
+   "familia": "inicio",
+   "nivel": "medio",
+   "pista": "começam com M",
+   "dica": ""
+  },
+  {
+   "id": "N07",
+   "familia": "inicio",
+   "nivel": "medio",
+   "pista": "começam com CA",
+   "dica": ""
+  },
+  {
+   "id": "N11",
+   "familia": "inicio",
+   "nivel": "medio",
+   "pista": "começam com RE",
+   "dica": ""
+  },
+  {
+   "id": "I01",
+   "familia": "inicio",
+   "nivel": "medio",
+   "pista": "começam com B",
+   "dica": ""
+  },
+  {
+   "id": "I05",
+   "familia": "inicio",
+   "nivel": "medio",
+   "pista": "começam com F",
+   "dica": ""
+  },
+  {
+   "id": "N13",
+   "familia": "inicio",
+   "nivel": "dificil",
+   "pista": "começam com as letras DES",
+   "dica": "Vale deste, desse, dessas."
+  },
+  {
+   "id": "I02",
+   "familia": "inicio",
+   "nivel": "dificil",
+   "pista": "começam com TR",
+   "dica": ""
+  },
+  {
+   "id": "N08",
+   "familia": "fim",
+   "nivel": "facil",
+   "pista": "terminam com ÃO",
+   "dica": ""
+  },
+  {
+   "id": "F06",
+   "familia": "fim",
+   "nivel": "facil",
+   "pista": "terminam com R",
+   "dica": ""
+  },
+  {
+   "id": "N14",
+   "familia": "fim",
+   "nivel": "medio",
+   "pista": "terminam com ÇÃO",
+   "dica": ""
+  },
+  {
+   "id": "F01",
+   "familia": "fim",
+   "nivel": "medio",
+   "pista": "terminam com L",
+   "dica": "Como papel, azul, difícil."
+  },
+  {
+   "id": "F07",
+   "familia": "fim",
+   "nivel": "medio",
+   "pista": "terminam com U",
+   "dica": "Como céu, chapéu, urubu."
+  },
+  {
+   "id": "F03",
+   "familia": "fim",
+   "nivel": "dificil",
+   "pista": "terminam com DADE",
+   "dica": ""
+  },
+  {
+   "id": "F04",
+   "familia": "fim",
+   "nivel": "dificil",
+   "pista": "terminam com EIRO ou EIRA",
+   "dica": "Como padeiro, cadeira."
+  },
+  {
+   "id": "N03",
+   "familia": "tamanho",
+   "nivel": "facil",
+   "pista": "têm exatamente 5 letras",
+   "dica": ""
+  },
+  {
+   "id": "N10",
+   "familia": "tamanho",
+   "nivel": "facil",
+   "pista": "têm exatamente 7 letras",
+   "dica": ""
+  },
+  {
+   "id": "T01",
+   "familia": "tamanho",
+   "nivel": "facil",
+   "pista": "têm exatamente 6 letras",
+   "dica": ""
+  },
+  {
+   "id": "N06",
+   "familia": "tamanho",
+   "nivel": "medio",
+   "pista": "têm exatamente 4 letras",
+   "dica": ""
+  },
+  {
+   "id": "N09",
+   "familia": "contem",
+   "nivel": "facil",
+   "pista": "têm pelo menos dois R",
+   "dica": "Como carro, terreno, correr."
+  },
+  {
+   "id": "N16",
+   "familia": "contem",
+   "nivel": "medio",
+   "pista": "têm as letras P e T",
+   "dica": ""
+  },
+  {
+   "id": "C01",
+   "familia": "contem",
+   "nivel": "medio",
+   "pista": "têm a letra Z",
+   "dica": ""
+  },
+  {
+   "id": "C05",
+   "familia": "contem",
+   "nivel": "medio",
+   "pista": "têm Ç",
+   "dica": ""
+  },
+  {
+   "id": "C06",
+   "familia": "contem",
+   "nivel": "medio",
+   "pista": "têm as letras V e L",
+   "dica": ""
+  },
+  {
+   "id": "C07",
+   "familia": "contem",
+   "nivel": "medio",
+   "pista": "têm as letras B e R",
+   "dica": ""
+  },
+  {
+   "id": "N12",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm CH",
+   "dica": ""
+  },
+  {
+   "id": "N19",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm LH",
+   "dica": ""
+  },
+  {
+   "id": "N20",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm NH",
+   "dica": ""
+  },
+  {
+   "id": "C02",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm a letra X",
+   "dica": ""
+  },
+  {
+   "id": "C03",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm a letra J",
+   "dica": ""
+  },
+  {
+   "id": "C04",
+   "familia": "contem",
+   "nivel": "dificil",
+   "pista": "têm QU",
+   "dica": ""
+  },
+  {
+   "id": "E01",
+   "familia": "sem",
+   "nivel": "facil",
+   "pista": "têm 6 letras ou mais e nenhum A",
+   "dica": "Ã e Á também contam como A."
+  },
+  {
+   "id": "E02",
+   "familia": "sem",
+   "nivel": "facil",
+   "pista": "não têm A nem E",
+   "dica": ""
+  },
+  {
+   "id": "E06",
+   "familia": "sem",
+   "nivel": "medio",
+   "pista": "têm 5 letras ou mais e nenhum A nem O",
+   "dica": ""
+  },
+  {
+   "id": "P02",
+   "familia": "posicao",
+   "nivel": "facil",
+   "pista": "têm R como terceira letra",
+   "dica": "Como carro, porta, ferro."
+  },
+  {
+   "id": "P04",
+   "familia": "posicao",
+   "nivel": "facil",
+   "pista": "começam e terminam com a mesma letra",
+   "dica": "Como asa, ótimo, sabores."
+  },
+  {
+   "id": "P05",
+   "familia": "posicao",
+   "nivel": "facil",
+   "pista": "têm I como segunda letra",
+   "dica": ""
+  },
+  {
+   "id": "P01",
+   "familia": "posicao",
+   "nivel": "medio",
+   "pista": "têm U como segunda letra",
+   "dica": "Como pular, sujo, gula."
+  },
+  {
+   "id": "P03",
+   "familia": "posicao",
+   "nivel": "dificil",
+   "pista": "têm L como segunda letra",
+   "dica": "Como bloco, claro, flor, planta."
+  },
+  {
+   "id": "K01",
+   "familia": "contagem",
+   "nivel": "facil",
+   "pista": "têm exatamente duas letras O",
+   "dica": ""
+  },
+  {
+   "id": "N17",
+   "familia": "contagem",
+   "nivel": "medio",
+   "pista": "têm exatamente três letras A",
+   "dica": "Conte só a letra A, com ou sem acento."
+  },
+  {
+   "id": "K03",
+   "familia": "contagem",
+   "nivel": "dificil",
+   "pista": "têm uma vogal só",
+   "dica": "Exatamente uma vogal na palavra inteira: mar e três valem; casa não, porque tem dois A."
+  },
+  {
+   "id": "M01",
+   "familia": "combinacao",
+   "nivel": "medio",
+   "pista": "começam com C e terminam com O",
+   "dica": ""
+  },
+  {
+   "id": "M02",
+   "familia": "combinacao",
+   "nivel": "medio",
+   "pista": "começam com P e terminam com A",
+   "dica": ""
+  },
+  {
+   "id": "M05",
+   "familia": "combinacao",
+   "nivel": "medio",
+   "pista": "começam com vogal e terminam com R",
+   "dica": ""
+  },
+  {
+   "id": "M04",
+   "familia": "combinacao",
+   "nivel": "dificil",
+   "pista": "começam com M e terminam com O",
+   "dica": ""
+  },
+  {
+   "id": "M06",
+   "familia": "combinacao",
+   "nivel": "dificil",
+   "pista": "começam com T e têm 7 letras ou mais",
+   "dica": ""
+  },
+  {
+   "id": "N15",
+   "familia": "combinacao",
+   "nivel": "dificil",
+   "pista": "têm 8 letras ou mais e começam com RE",
+   "dica": ""
+  },
+  {
+   "id": "R01",
+   "familia": "padrao",
+   "nivel": "facil",
+   "pista": "alternam consoante e vogal, com 5 letras ou mais",
+   "dica": "Como menina, tomate, sapato."
+  },
+  {
+   "id": "N18",
+   "familia": "padrao",
+   "nivel": "medio",
+   "pista": "têm duas letras iguais seguidas",
+   "dica": "Como carro, massa, assado."
+  },
+  {
+   "id": "R02",
+   "familia": "padrao",
+   "nivel": "medio",
+   "pista": "têm três consoantes seguidas",
+   "dica": "Como instrumento, abstrato, construir."
+  },
+  {
+   "id": "R03",
+   "familia": "padrao",
+   "nivel": "dificil",
+   "pista": "têm as cinco vogais",
+   "dica": "A, E, I, O e U na mesma palavra."
+  }
+ ]
+}
