@@ -1,0 +1,21 @@
+/* Matutar UI v1.0.0 · ponte para jogos feitos sobre a base antiga (matutar-base.css / pitaco.css).
+ * Carregar DEPOIS do CSS do jogo. Só troca valores de tokens: layout, componentes e mecânica ficam iguais.
+ * Para reverter um jogo, basta tirar o <link> deste arquivo.
+ */
+:root{
+  --papel:var(--mt-fundo); --papel-claro:var(--mt-superficie); --papel-escuro:var(--mt-superficie-2);
+  --tinta:var(--mt-tinta); --tinta-suave:var(--mt-tinta-2);
+  --sol:var(--mt-preco); --sol-claro:var(--mt-preco-claro);
+  --musgo:var(--mt-sucesso); --musgo-texto:var(--mt-sucesso); --musgo-claro:var(--mt-sucesso-fundo);
+  --coral:var(--mt-coral); --coral-texto:var(--mt-erro); --coral-claro:var(--mt-erro-fundo);
+  --ceu:var(--mt-duelo); --ceu-claro:var(--mt-duelo-claro);
+  --chiclete:#EBB4CC; --primario:var(--mt-foco);
+  --lilas:var(--mt-confia); --lilas-claro:var(--mt-confia-claro);
+  --fonte-cartaz:var(--mt-titulo); --fonte-texto:var(--mt-texto); --fonte-mao:var(--mt-titulo); --fonte-cupom:var(--mt-mono);
+  --traco:var(--mt-traco);
+  --grao:none;
+}
+body{font-family:var(--mt-texto)}
+/* ação principal no padrão da casa: grafite, texto claro, Work Sans */
+.btn-principal{background:var(--mt-tinta);color:var(--mt-superficie);font-family:var(--mt-texto);font-weight:600;letter-spacing:0}
+.btn-principal:hover{background:#2E2A44}

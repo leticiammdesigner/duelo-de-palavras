@@ -3,7 +3,8 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,400..900&display=swap">
+<link rel="stylesheet" href="matutar-ui/matutar-ui.css?v=1.0.0">
 <style>
 /* Layout: um placar de duelo. Faixa de confronto no topo (você em anil, rival em urucum),
    pista como peças de letra, campo de digitação ancorado acima do teclado. */
@@ -306,8 +307,12 @@ button { font: inherit; color: inherit; }
   .peca-p { height: 26px; font-size: .85rem; }
 }
 </style>
+<link rel="stylesheet" href="duelo-matutar.css?v=1">
 
 <div class="app" id="app">
+  <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
+    <a class="mt-voltar" href="https://matutar-games.netlify.app/" data-mt-home><span class="mt-seta" aria-hidden="true">←</span><span class="mt-pecas" aria-hidden="true"><i></i><i></i><i></i></span>Todos os jogos</a>
+  </div></nav>
 
   <!-- INÍCIO -->
   <section class="tela rolavel inicio" id="tela-inicio" aria-labelledby="titulo-jogo">
@@ -1390,4 +1395,12 @@ window.__duelo = { get jogo() { return jogo; }, get rod() { return rod; }, encer
 })();
 </script>
 
+<script src="matutar-ui/matutar-ui.js?v=1.0.0" defer></script>
+<script>
+// Sair no meio de uma rodada perde a rodada; nas telas de início e de fim, sai direto.
+window.matutarSaida = function () {
+  var ativa = ['tela-pre', 'tela-rodada', 'tela-resumo'].some(function (id) { var t = document.getElementById(id); return t && !t.hidden; });
+  return ativa ? 'Você está no meio de um duelo. Se sair agora, a rodada em andamento se perde.' : null;
+};
+</script>
 </body></html>

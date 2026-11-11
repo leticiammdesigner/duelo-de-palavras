@@ -1,0 +1,79 @@
+/* Matutar UI v1.0.0 · base visual compartilhada da Matutar Games.
+ * Fonte de verdade: repositório matutar-games, pasta matutar-ui/. Os jogos guardam uma CÓPIA desta
+ * pasta (sem dependência entre sites). Para atualizar um jogo: copiar a pasta inteira e subir a versão.
+ * Tudo aqui usa prefixo mt- (tokens --mt-*, classes .mt-*) para não colidir com o CSS de cada jogo.
+ */
+@font-face{font-family:'Bricolage Grotesque';font-weight:700;font-display:swap;src:url(fontes/bricolage-grotesque-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Bricolage Grotesque';font-weight:800;font-display:swap;src:url(fontes/bricolage-grotesque-latin-800-normal.woff2) format('woff2')}
+@font-face{font-family:'Work Sans';font-weight:400;font-display:swap;src:url(fontes/work-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Work Sans';font-weight:600;font-display:swap;src:url(fontes/work-sans-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Roboto Mono';font-weight:500;font-display:swap;src:url(fontes/roboto-mono-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Roboto Mono';font-weight:700;font-display:swap;src:url(fontes/roboto-mono-latin-700-normal.woff2) format('woff2')}
+
+:root{
+  /* superfícies */
+  --mt-fundo:#FBF6EC; --mt-superficie:#FFFDF8; --mt-superficie-2:#F2EBDD;
+  /* texto e linha */
+  --mt-tinta:#1E1B2E; --mt-tinta-2:#3C384D; --mt-linha:#1E1B2E;
+  /* cor de cada jogo e da casa (pastel; texto sempre em --mt-tinta por cima) */
+  --mt-duelo:#A9C0DC; --mt-preco:#FFE48A; --mt-confia:#C3B4F2; --mt-novidade:#C5E6CD; --mt-coral:#F2AE98;
+  --mt-duelo-claro:#DFE7F1; --mt-preco-claro:#FFF3C4; --mt-confia-claro:#ECE6FB; --mt-novidade-claro:#E4F3E8; --mt-coral-claro:#FBE3DA;
+  /* estados (texto escuro o bastante para 4,5:1 sobre as superfícies claras) */
+  --mt-sucesso:#2F6B45; --mt-sucesso-fundo:#DDF0E2;
+  --mt-erro:#A33A2A; --mt-erro-fundo:#FBE3DA;
+  --mt-atencao:#7A5300; --mt-atencao-fundo:#FFF3C4;
+  --mt-foco:#2C4F9E;
+  /* tipografia */
+  --mt-titulo:'Bricolage Grotesque','Work Sans',system-ui,sans-serif;
+  --mt-texto:'Work Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mt-mono:'Roboto Mono','Courier New',monospace;
+  /* forma */
+  --mt-traco:2px solid var(--mt-linha); --mt-traco-fino:1.5px solid var(--mt-linha);
+  --mt-sombra:4px 4px 0 var(--mt-linha); --mt-sombra-p:2px 2px 0 var(--mt-linha);
+  --mt-raio:18px; --mt-raio-p:12px; --mt-pilula:999px;
+  /* espaço (escala de 4) */
+  --mt-e1:4px; --mt-e2:8px; --mt-e3:12px; --mt-e4:16px; --mt-e5:20px; --mt-e6:28px;
+  --mt-toque:44px;
+  --mt-gutter-e:max(16px,env(safe-area-inset-left,0px)); --mt-gutter-d:max(16px,env(safe-area-inset-right,0px));
+}
+
+/* ---------- cabeçalho compartilhado: "Todos os jogos" à esquerda, ações do jogo à direita */
+.mt-barra{position:relative;z-index:20;width:100%;display:flex;align-items:center;justify-content:space-between;gap:var(--mt-e2);
+  padding:max(6px,env(safe-area-inset-top,0px)) var(--mt-gutter-d) 6px var(--mt-gutter-e);
+  background:var(--mt-fundo);border-bottom:var(--mt-traco);font-family:var(--mt-texto);color:var(--mt-tinta);box-sizing:border-box}
+.mt-barra-dentro{width:100%;max-width:var(--mt-largura,560px);margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:var(--mt-e2)}
+.mt-voltar{display:inline-flex;align-items:center;gap:8px;min-height:var(--mt-toque);padding:0 12px 0 8px;margin-left:-8px;border-radius:var(--mt-pilula);
+  color:var(--mt-tinta);text-decoration:none;font-family:var(--mt-mono);font-weight:700;font-size:13px;letter-spacing:.2px;white-space:nowrap}
+.mt-voltar:hover{background:var(--mt-superficie-2)}
+.mt-voltar .mt-seta{font-family:var(--mt-texto);font-size:17px;line-height:1}
+.mt-pecas{display:inline-flex}
+.mt-pecas i{width:14px;height:14px;border:1.5px solid var(--mt-linha);font-style:normal;box-sizing:border-box}
+.mt-pecas i+i{margin-left:-4px}
+.mt-pecas i:nth-child(1){background:var(--mt-duelo);border-radius:4px}
+.mt-pecas i:nth-child(2){background:var(--mt-preco);border-radius:4px 4px 4px 8px}
+.mt-pecas i:nth-child(3){background:var(--mt-confia);border-radius:50%}
+.mt-acoes{display:flex;align-items:center;gap:var(--mt-e2)}
+
+/* ---------- botões */
+.mt-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:var(--mt-pilula);
+  border:2px solid var(--mt-tinta);background:var(--mt-tinta);color:var(--mt-superficie);font:600 16px/1 var(--mt-texto);text-decoration:none;cursor:pointer}
+.mt-btn-claro{background:var(--mt-superficie);color:var(--mt-tinta)}
+.mt-btn:active{transform:translate(1px,1px)}
+
+/* ---------- foco visível único */
+.mt-barra :focus-visible,.mt-aviso :focus-visible{outline:3px solid var(--mt-foco);outline-offset:3px}
+
+/* ---------- aviso antes de sair de uma partida */
+.mt-aviso{border:var(--mt-traco);border-radius:var(--mt-raio);box-shadow:var(--mt-sombra);background:var(--mt-superficie);color:var(--mt-tinta);
+  padding:0;width:min(400px,calc(100vw - 32px));font-family:var(--mt-texto)}
+.mt-aviso::backdrop{background:rgba(30,27,46,.55)}
+.mt-aviso form{padding:var(--mt-e5);display:grid;gap:var(--mt-e3)}
+.mt-aviso h2{margin:0;font-family:var(--mt-titulo);font-weight:800;font-size:24px;line-height:1.1}
+.mt-aviso p{margin:0;font-size:17px;line-height:1.45;color:var(--mt-tinta-2)}
+.mt-aviso .mt-btn{width:100%}
+
+.mt-sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){.mt-btn:active{transform:none}}
+/* celulares estreitos: as peças saem do link, o texto "Todos os jogos" fica */
+@media (max-width:359px){.mt-voltar .mt-pecas{display:none}.mt-voltar{gap:6px;padding-right:8px}.mt-acoes{gap:4px}}
+.mt-barra-dentro>*{min-width:0}

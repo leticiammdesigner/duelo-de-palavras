@@ -1,0 +1,29 @@
+/* Duelo de Palavras dentro da Matutar UI.
+ * Mantém o placar você × rival, as peças de letra e o timer; troca a paleta e a tipografia pelas da casa.
+ * A casa é clara: o tema escuro do Duelo fica desligado para o jogo não destoar da plataforma.
+ * Reverter = tirar este <link> e os da matutar-ui. */
+:root, :root[data-theme="dark"] {
+  --papel: var(--mt-fundo); --superficie: var(--mt-superficie); --tinta: var(--mt-tinta); --tinta-2: var(--mt-tinta-2); --linha: #D9D1C2;
+  --voce: #2C4F9E; --voce-suave: var(--mt-duelo-claro); --voce-tinta: #FFFFFF;
+  --rival: #A33A2A; --rival-suave: var(--mt-coral-claro); --rival-tinta: #FFFFFF;
+  --ok: var(--mt-sucesso); --ok-suave: var(--mt-sucesso-fundo); --erro: var(--mt-erro); --erro-suave: var(--mt-erro-fundo);
+  --atencao: var(--mt-atencao); --atencao-suave: var(--mt-atencao-fundo);
+  --peca: var(--mt-superficie); --peca-borda: var(--mt-tinta);
+  --display: var(--mt-titulo); --texto: var(--mt-texto);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --papel: var(--mt-fundo); --superficie: var(--mt-superficie); --tinta: var(--mt-tinta); --tinta-2: var(--mt-tinta-2); --linha: #D9D1C2;
+  --voce: #2C4F9E; --voce-suave: var(--mt-duelo-claro); --voce-tinta: #FFFFFF;
+  --rival: #A33A2A; --rival-suave: var(--mt-coral-claro); --rival-tinta: #FFFFFF;
+  --ok: var(--mt-sucesso); --ok-suave: var(--mt-sucesso-fundo); --erro: var(--mt-erro); --erro-suave: var(--mt-erro-fundo);
+  --atencao: var(--mt-atencao); --atencao-suave: var(--mt-atencao-fundo);
+  --peca: var(--mt-superficie); --peca-borda: var(--mt-tinta);
+  --display: var(--mt-titulo); --texto: var(--mt-texto);
+  color-scheme: light; } }
+body { background: var(--mt-fundo); }
+:focus-visible { outline-color: var(--mt-foco); }
+/* a voz do Duelo (Anybody condensada) fica só no logo */
+.marca { font-family: 'Anybody', 'Arial Narrow', sans-serif; }
+/* cabeçalho da casa dentro do app (o app já cuida das bordas e da área segura) */
+.app > .mt-barra { flex: none; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-top: 6px; width: auto; }
