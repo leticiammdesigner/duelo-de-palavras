@@ -49,3 +49,15 @@ O jogo define `window.matutarSaida = () => 'texto' | null`. Com texto, o link pe
 1. Copie a pasta `matutar-ui/` inteira para o jogo.
 2. Suba o `?v=` dos links no HTML do jogo.
 3. Teste o jogo (cada repositório tem seus testes).
+
+## Versão em cada repositório
+O número está em `matutar-ui/VERSAO` (e no comentário do topo dos arquivos). Ao copiar a pasta para um jogo, atualize esta tabela.
+
+| Repositório | Pasta | Versão |
+|---|---|---|
+| matutar-games (fonte) | `matutar-ui/` | 1.0.0 |
+| confia | `matutar-ui/` | 1.0.0 |
+| qual-o-preco | `dist/matutar-ui/` | 1.0.0 |
+| duelo-de-palavras | `matutar-ui/` | 1.0.0 |
+
+Componentes específicos de um jogo ficam no CSS do próprio jogo (`confia-matutar.css`, `qop-matutar.css`, `duelo-matutar.css`), nunca aqui.

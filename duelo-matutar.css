@@ -27,3 +27,35 @@ body { background: var(--mt-fundo); }
 .marca { font-family: 'Anybody', 'Arial Narrow', sans-serif; }
 /* cabeçalho da casa dentro do app (o app já cuida das bordas e da área segura) */
 .app > .mt-barra { flex: none; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-top: 6px; width: auto; }
+
+/* ---------- partida: pilhas de palavras (ajuste de 11/11) ----------
+ * As pilhas usam a classe .blocos, mas o estilo de pilha estava escrito para .peca-ps: as palavras não
+ * empilhavam e o meio da arena ficava vazio. Aqui a pilha volta a ser o que o desenho previa:
+ * coluna que cresce de baixo para cima, sobre um "chão", ocupando a arena toda e rolando se encher. */
+.marca { font-family: var(--mt-titulo); font-stretch: 100%; letter-spacing: -.02em; }
+#titulo-jogo { font-family: 'Anybody', 'Arial Narrow', sans-serif; font-stretch: 62%; letter-spacing: -.01em; }
+.arena { gap: 12px; padding-block: 10px 6px; }
+.pilha { background: var(--mt-superficie); border: var(--mt-traco-fino); border-radius: var(--mt-raio-p); padding: 8px 8px 0; }
+.pilha-cab { padding-inline: 2px; }
+.blocos { flex: 1; min-height: 72px; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column-reverse;
+  gap: 5px; align-items: flex-start; padding: 6px 0 8px; border-bottom: 3px solid var(--mt-tinta); }
+.pilha.rival .blocos { align-items: flex-end; }
+.peca-p { height: 32px; font-size: .95rem; }
+/* recusada: a peça tracejada mostra a palavra inteira e o motivo curto, e some em seguida */
+.peca-p.fantasma { width: auto; max-width: 100%; }
+.peca-p.fantasma .w { overflow: visible; }
+/* instrução: só enquanto a pilha está vazia, no pé da coluna, sem disputar espaço */
+.pilha-vazia { margin: 0; align-self: stretch; text-align: center; font-size: .9rem; color: var(--mt-tinta-2);
+  border: 2px dashed #D9D1C2; border-radius: 10px; padding: 14px 8px; }
+/* retorno de cada envio: maior e com a palavra, para ler sem procurar */
+.retorno { min-height: 36px; }
+.retorno .msg { font-size: .98rem; padding: 7px 12px; border-radius: 10px; }
+.retorno .dica-enter { font-size: .9rem; }
+
+/* ---------- resumo da rodada: placar com nome de cada lado ---------- */
+.res-cab .marca { font-size: clamp(2rem, 9vw, 2.6rem); line-height: 1; }
+.res-placar { align-items: flex-end; gap: 14px; font-size: 2.8rem; }
+.res-placar .lado { display: grid; gap: 2px; }
+.res-placar .quem-res { font-family: var(--mt-mono); font-size: .8rem; font-weight: 700; color: var(--mt-tinta-2); letter-spacing: .02em; }
+.res-placar .x { padding-bottom: 8px; }
+.final .marca, .desafio .marca { font-size: clamp(2.2rem, 11vw, 3rem); line-height: 1; }

@@ -307,7 +307,7 @@ button { font: inherit; color: inherit; }
   .peca-p { height: 26px; font-size: .85rem; }
 }
 </style>
-<link rel="stylesheet" href="duelo-matutar.css?v=1">
+<link rel="stylesheet" href="duelo-matutar.css?v=2">
 
 <div class="app" id="app">
   <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
@@ -388,7 +388,7 @@ button { font: inherit; color: inherit; }
     <div class="arena" id="arena" aria-label="Palavras da rodada">
       <div class="pilha voce">
         <div class="pilha-cab"><span class="rotulo">Você</span><span class="rotulo" id="cont-palavras">0 palavras</span></div>
-        <div class="blocos" id="pilha-voce" role="list" aria-label="Suas palavras"><p class="pilha-vazia" id="feed-vazio">Digite e aperte Enter. Suas palavras empilham aqui.</p></div>
+        <div class="blocos" id="pilha-voce" role="list" aria-label="Suas palavras"><p class="pilha-vazia" id="feed-vazio">Suas palavras válidas empilham aqui.</p></div>
       </div>
       <div class="pilha rival">
         <div class="pilha-cab"><span class="rotulo" id="nome-rival-2">Ana</span><span class="rotulo" id="cont-rival">0 palavras</span></div>
@@ -696,7 +696,7 @@ var pecasNaPilha = new Map();
 function limparPilhas() {
   pecasNaPilha = new Map();
   $('pilha-voce').textContent = ''; $('pilha-rival').textContent = '';
-  var v = el('p', 'pilha-vazia', 'Digite e aperte Enter. Suas palavras empilham aqui.'); v.id = 'feed-vazio';
+  var v = el('p', 'pilha-vazia', 'Suas palavras válidas empilham aqui.'); v.id = 'feed-vazio';
   $('pilha-voce').appendChild(v);
   $('cont-palavras').textContent = '0 palavras'; $('cont-rival').textContent = '0 palavras';
 }
@@ -768,11 +768,11 @@ function retornar(e, inp) {
   if (!e) return;
   switch (e.status) {
     case 'Aceita': msg = '+' + e.pontos + ' · ' + e.digitado.toLowerCase(); cls = 'ok'; break;
-    case 'Bloqueada': msg = 'Bloqueada · ' + jogo.rival.nome + ' usou antes'; cls = 'bloq'; break;
-    case 'Já usada': msg = 'Já usada'; cls = 'atencao'; break;
+    case 'Bloqueada': msg = e.digitado.toLowerCase() + ' · ' + jogo.rival.nome + ' usou antes'; cls = 'bloq'; break;
+    case 'Já usada': msg = e.digitado.toLowerCase() + ' · já usada'; cls = 'atencao'; break;
     case 'Empate': msg = 'Empate com ' + jogo.rival.nome + ' · ninguém pontua'; cls = 'atencao'; break;
-    case 'Fora da pista': msg = 'Fora da pista'; cls = 'erro'; break;
-    case 'Não encontrada': msg = existeMemo.get(e.digitado.toLowerCase()) === null ? 'Não vale nesta rodada' : 'Não encontrada'; cls = 'erro'; break;
+    case 'Fora da pista': msg = e.digitado.toLowerCase() + ' · existe, mas não atende à pista'; cls = 'erro'; break;
+    case 'Não encontrada': msg = e.digitado.toLowerCase() + ' · ' + (existeMemo.get(e.digitado.toLowerCase()) === null ? 'não vale nesta rodada' : 'não encontrei essa palavra'); cls = 'erro'; break;
     default: msg = 'Use só letras, 3 ou mais'; cls = 'erro';
   }
   r.appendChild(el('span', 'msg ' + cls, msg));
@@ -823,9 +823,10 @@ function mostrarResumo() {
   var tit = el('h2', 'marca', jogo.dia ? 'Rodada ' + n + ' feita' : pv > pr ? 'Rodada sua' : pv < pr ? 'Rodada de ' + jogo.rival.nome : 'Rodada empatada'); tit.id = 'res-titulo';
   cab.appendChild(tit);
   var pl = el('div', 'res-placar num');
-  pl.appendChild(el('span', 'v', pv));
+  var lado = function (cls, nome, pts) { var d = el('span', 'lado ' + cls); d.appendChild(el('small', 'quem-res', nome)); d.appendChild(el('span', cls, pts)); return d; };
+  pl.appendChild(lado('v', 'Você', pv));
   if (jogo.dia) pl.appendChild(el('span', 'x', 'pontos'));
-  else { pl.appendChild(el('span', 'x', '×')); pl.appendChild(el('span', 'r', pr)); }
+  else { pl.appendChild(el('span', 'x', '×')); pl.appendChild(lado('r', jogo.rival.nome, pr)); }
   cab.appendChild(pl); s.appendChild(cab);
   if (jogo.dia && jogo.dia.avisoSalvar) s.appendChild(el('p', 'erro-carga', jogo.dia.avisoSalvar));
 
