@@ -1,0 +1,116 @@
+/* Duelo de Palavras dentro da Matutar UI.
+ * Mantém o placar você × rival, as peças de letra e o timer; troca a paleta e a tipografia pelas da casa.
+ * A casa é clara: o tema escuro do Duelo fica desligado para o jogo não destoar da plataforma.
+ * Reverter = tirar este <link> e os da matutar-ui. */
+:root, :root[data-theme="dark"] {
+  --papel: var(--mt-fundo); --superficie: var(--mt-superficie); --tinta: var(--mt-tinta); --tinta-2: var(--mt-tinta-2); --linha: #D9D1C2;
+  --voce: #2C4F9E; --voce-suave: var(--mt-duelo-claro); --voce-tinta: #FFFFFF;
+  --rival: #A33A2A; --rival-suave: var(--mt-coral-claro); --rival-tinta: #FFFFFF;
+  --ok: var(--mt-sucesso); --ok-suave: var(--mt-sucesso-fundo); --erro: var(--mt-erro); --erro-suave: var(--mt-erro-fundo);
+  --atencao: var(--mt-atencao); --atencao-suave: var(--mt-atencao-fundo);
+  --peca: var(--mt-superficie); --peca-borda: var(--mt-tinta);
+  --display: var(--mt-titulo); --texto: var(--mt-texto);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --papel: var(--mt-fundo); --superficie: var(--mt-superficie); --tinta: var(--mt-tinta); --tinta-2: var(--mt-tinta-2); --linha: #D9D1C2;
+  --voce: #2C4F9E; --voce-suave: var(--mt-duelo-claro); --voce-tinta: #FFFFFF;
+  --rival: #A33A2A; --rival-suave: var(--mt-coral-claro); --rival-tinta: #FFFFFF;
+  --ok: var(--mt-sucesso); --ok-suave: var(--mt-sucesso-fundo); --erro: var(--mt-erro); --erro-suave: var(--mt-erro-fundo);
+  --atencao: var(--mt-atencao); --atencao-suave: var(--mt-atencao-fundo);
+  --peca: var(--mt-superficie); --peca-borda: var(--mt-tinta);
+  --display: var(--mt-titulo); --texto: var(--mt-texto);
+  color-scheme: light; } }
+body { background: var(--mt-fundo); }
+:focus-visible { outline-color: var(--mt-foco); }
+/* a voz do Duelo (Anybody condensada) fica só no logo */
+.marca { font-family: 'Anybody', 'Arial Narrow', sans-serif; }
+/* cabeçalho da casa dentro do app (o app já cuida das bordas e da área segura) */
+.app > .mt-barra { flex: none; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding-top: 6px; width: auto; }
+
+/* ---------- partida: pilhas de palavras (ajuste de 11/11) ----------
+ * As pilhas usam a classe .blocos, mas o estilo de pilha estava escrito para .peca-ps: as palavras não
+ * empilhavam e o meio da arena ficava vazio. Aqui a pilha volta a ser o que o desenho previa:
+ * coluna que cresce de baixo para cima, sobre um "chão", ocupando a arena toda e rolando se encher. */
+.marca { font-family: var(--mt-titulo); font-stretch: 100%; letter-spacing: -.02em; }
+#titulo-jogo { font-family: 'Anybody', 'Arial Narrow', sans-serif; font-stretch: 62%; letter-spacing: -.01em; }
+.arena { gap: 12px; padding-block: 10px 6px; }
+.pilha { background: var(--mt-superficie); border: var(--mt-traco-fino); border-radius: var(--mt-raio-p); padding: 8px 8px 0; }
+.pilha-cab { padding-inline: 2px; }
+.blocos { flex: 1; min-height: 72px; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column-reverse;
+  gap: 5px; align-items: flex-start; padding: 6px 0 8px; border-bottom: 3px solid var(--mt-tinta); }
+.pilha.rival .blocos { align-items: flex-end; }
+.peca-p { height: 32px; font-size: .95rem; }
+/* recusada: a peça tracejada mostra a palavra inteira e o motivo curto, e some em seguida */
+.peca-p.fantasma { width: auto; max-width: 100%; }
+.peca-p.fantasma .w { overflow: visible; }
+/* instrução: só enquanto a pilha está vazia, no pé da coluna, sem disputar espaço */
+.pilha-vazia { margin: 0; align-self: stretch; text-align: center; font-size: .9rem; color: var(--mt-tinta-2);
+  border: 2px dashed #D9D1C2; border-radius: 10px; padding: 14px 8px; }
+/* retorno de cada envio: maior e com a palavra, para ler sem procurar */
+.retorno { min-height: 36px; }
+.retorno .msg { font-size: .98rem; padding: 7px 12px; border-radius: 10px; }
+.retorno .dica-enter { font-size: .9rem; }
+
+/* ---------- resumo da rodada: placar com nome de cada lado ---------- */
+.res-cab .marca { font-size: clamp(2rem, 9vw, 2.6rem); line-height: 1; }
+.res-placar { align-items: flex-end; gap: 14px; font-size: 2.8rem; }
+.res-placar .lado { display: grid; gap: 2px; }
+.res-placar .quem-res { font-family: var(--mt-mono); font-size: .8rem; font-weight: 700; color: var(--mt-tinta-2); letter-spacing: .02em; }
+.res-placar .x { padding-bottom: 8px; }
+.final .marca, .desafio .marca { font-size: clamp(2.2rem, 11vw, 3rem); line-height: 1; }
+
+/* ---------- partida no celular com o teclado aberto (ajuste de 12/11) ----------
+ * O app acompanha a parte visível da tela (--alt e --topo-vv, calculados pelo visualViewport).
+ * Prioridade quando a altura aperta: pista inteira e campo inteiro; as pilhas ficam com o que sobrar,
+ * rolando por dentro. Nada sai da própria região: arena e pilhas cortam o que passar do limite. */
+.app { position: fixed; top: var(--topo-vv, 0px); left: 0; right: 0; margin-inline: auto; }
+#tela-rodada .topo, #tela-rodada .pista, #tela-rodada .campo { flex: none; }
+#tela-rodada .arena { overflow: hidden; }
+#tela-rodada .pilha { overflow: hidden; }
+#tela-rodada .blocos { min-height: 0; }
+/* retorno com altura fixa e uma linha: a mensagem muda, o campo não sai do lugar */
+#tela-rodada .retorno { height: 36px; min-height: 0; overflow: hidden; }
+#tela-rodada .retorno .msg { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+
+/* apresentação compacta (menos de 600px de altura útil: teclado aberto ou tela baixa) */
+.apertado .app > .mt-barra { padding-block: 0; }
+.apertado #tela-rodada .topo { padding-block: 6px 6px; gap: 5px; }
+.apertado #tela-rodada .linha-topo { display: none; }
+.apertado #tela-rodada .placar { align-items: center; }
+.apertado #tela-rodada .lado-placar { grid-auto-flow: column; justify-content: start; align-items: center; gap: 8px; }
+.apertado #tela-rodada .lado-placar.rival { justify-content: end; }
+.apertado #tela-rodada .lado-placar .pts { font-size: 1.55rem; line-height: 1; }
+.apertado #tela-rodada .vs { padding-bottom: 0; font-size: .85rem; }
+.apertado #tela-rodada .cabo { height: 5px; }
+.apertado #tela-rodada .pista { padding: 8px 12px 0; gap: 4px; }
+.apertado #tela-rodada .pista > .rotulo { font-size: .68rem; }
+.apertado #tela-rodada .pista .frase { font-size: 1.04rem; line-height: 1.2; }
+.apertado #tela-rodada .pista .dica { font-size: .8rem; }
+.apertado #tela-rodada .relogio { font-size: 1.4rem; }
+.apertado #tela-rodada .barra-tempo { height: 4px; margin: 0 -12px; }
+.apertado #tela-rodada .arena { padding-block: 6px 4px; gap: 8px; }
+.apertado #tela-rodada .pilha { padding: 4px 6px 0; gap: 2px; }
+.apertado #tela-rodada .pilha-cab .rotulo { font-size: .66rem; }
+.apertado #tela-rodada .blocos { gap: 3px; padding: 3px 0 4px; border-bottom-width: 2px; }
+.apertado #tela-rodada .peca-p { height: 24px; font-size: .82rem; padding: 0 6px; border-bottom-width: 3px; }
+.apertado #tela-rodada .pilha-vazia { padding: 6px; font-size: .8rem; border-width: 1.5px; }
+.apertado #tela-rodada .campo { padding-block: 4px calc(6px + env(safe-area-inset-bottom, 0px)); gap: 4px; }
+.apertado #tela-rodada .retorno { height: 30px; }
+.apertado #tela-rodada .retorno .msg { font-size: .9rem; padding: 4px 10px; }
+.apertado #tela-rodada .form input { padding: 9px 14px; font-size: 1.1rem; }
+/* muito pouca altura (tela baixa com teclado): sai a contagem em cima das pilhas, ficam as peças */
+.muito-apertado #tela-rodada .pilha-cab { display: none; }
+.muito-apertado #tela-rodada .pilha { padding-top: 2px; }
+.muito-apertado #tela-rodada .arena { padding-block: 4px 2px; }
+
+/* ---------- compartilhar resultado (padrão Matutar Games, igual nos três jogos) ---------- */
+.compartilhar > * { min-width: 0; }
+.compartilhar .comp-nota { margin: 0; font-size: .92rem; line-height: 1.4; color: var(--mt-tinta-2); }
+.compartilhar .comp-botao { justify-self: start; min-height: 46px; }
+.comp-status { margin: 0; min-height: 1.35em; font-size: .92rem; font-weight: 600; line-height: 1.35; color: var(--mt-tinta-2); }
+.comp-status.ok { color: var(--mt-sucesso); }
+.comp-status.ok::before { content: "✓ "; }
+.comp-texto { width: 100%; box-sizing: border-box; resize: none; margin: 0; padding: 10px 12px; border: 2px solid var(--mt-tinta); border-radius: 10px;
+  background: var(--mt-fundo); color: var(--mt-tinta); font: 15px/1.45 var(--mt-texto); white-space: pre-wrap; overflow-wrap: anywhere; }
+.comp-botao:focus-visible, .comp-texto:focus-visible { outline: 3px solid var(--mt-foco); outline-offset: 3px; }

@@ -10,3 +10,6 @@ Site estático, sem build. Netlify publica a raiz (`netlify.toml`).
 - Desafio por link só existe dentro do Claude (usa o armazenamento do artifact); fora dele, o bloco não aparece.
 
 Origem: exportado do artifact "Duelo de Palavras" no Claude em 11/11/2026, com duas mudanças: link do jogo passa a ser o endereço publicado e o bloco de desafio por link some fora do Claude.
+
+## Matutar UI
+Este jogo usa uma cópia da Matutar UI **v1.0.0** (pasta `matutar-ui`, versão em `matutar-ui/VERSAO`). A fonte de verdade fica no repositório `matutar-games`. Ajustes só deste jogo vão em `duelo-matutar.css`.

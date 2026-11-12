@@ -1,9 +1,10 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Duelo de Palavras</title>
+<meta name="description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos. Um jogo da Matutar Games.">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="preload" href="fontes/anybody-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:'Anybody';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:50% 150%;src:url(fontes/anybody-latin-variable.woff2) format('woff2-variations'),url(fontes/anybody-latin-variable.woff2) format('woff2')}</style>
+<link rel="stylesheet" href="matutar-ui/matutar-ui.css?v=1.0.0">
 <style>
 /* Layout: um placar de duelo. Faixa de confronto no topo (você em anil, rival em urucum),
    pista como peças de letra, campo de digitação ancorado acima do teclado. */
@@ -214,7 +215,7 @@ button { font: inherit; color: inherit; }
 .rodadas .perdeu { box-shadow: inset 0 0 0 2px var(--rival); }
 .rodadas .num { font-size: 1.15rem; }
 .compartilhar { background: var(--superficie); border-radius: var(--raio); box-shadow: 0 0 0 1px var(--linha); padding: 14px; display: grid; gap: 10px; }
-.compartilhar pre { margin: 0; font-family: var(--texto); white-space: pre-wrap; font-size: .95rem; user-select: all; }
+.compartilhar pre { margin: 0; font-family: var(--texto); white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; user-select: all; }
 .ok-copia { color: var(--ok); font-weight: 700; font-size: .9rem; min-height: 1.3em; margin: 0; }
 .final .marca { font-size: clamp(3.2rem, 16vw, 5rem); }
 .final .marca.vitoria { color: var(--voce); } .final .marca.derrota { color: var(--rival); }
@@ -306,13 +307,17 @@ button { font: inherit; color: inherit; }
   .peca-p { height: 26px; font-size: .85rem; }
 }
 </style>
+<link rel="stylesheet" href="duelo-matutar.css?v=5">
 
 <div class="app" id="app">
+  <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
+    <a class="mt-voltar" href="https://matutar-games.netlify.app/" data-mt-home><span class="mt-seta" aria-hidden="true">←</span><span class="mt-pecas" aria-hidden="true"><i></i><i></i><i></i></span>Todos os jogos</a>
+  </div></nav>
 
   <!-- INÍCIO -->
   <section class="tela rolavel inicio" id="tela-inicio" aria-labelledby="titulo-jogo">
     <h1 class="marca" id="titulo-jogo"><span>Duelo</span><span class="de">de</span><span>Palavras</span></h1>
-    <section class="card-dia" id="card-dia" aria-labelledby="dia-titulo">
+    <section class="card-dia" id="card-dia" aria-labelledby="dia-titulo" hidden>
       <div class="topo-dia"><span class="rotulo" id="dia-rotulo">Duelo do Dia</span><span class="selo-teste" id="dia-teste" hidden>Modo de teste</span></div>
       <h2 id="dia-titulo">Carregando o duelo de hoje…</h2>
       <p id="dia-texto">Quatro pistas iguais para todo mundo. Uma tentativa por dia, sem adversária.</p>
@@ -324,7 +329,7 @@ button { font: inherit; color: inherit; }
       <p class="estado" id="dia-estado" aria-live="polite"></p>
       <button class="btn btn-primario btn-largo" id="btn-dia" type="button" hidden>Jogar o duelo de hoje</button>
     </section>
-    <div class="separador rotulo">Partida livre</div>
+    <div class="separador rotulo" id="sep-livre" hidden>Partida livre</div>
     <div class="vs-demo" aria-hidden="true">
       <span class="lado"><span class="ponto voce"></span>Você</span>
       <span class="vs">VS</span>
@@ -383,7 +388,7 @@ button { font: inherit; color: inherit; }
     <div class="arena" id="arena" aria-label="Palavras da rodada">
       <div class="pilha voce">
         <div class="pilha-cab"><span class="rotulo">Você</span><span class="rotulo" id="cont-palavras">0 palavras</span></div>
-        <div class="blocos" id="pilha-voce" role="list" aria-label="Suas palavras"><p class="pilha-vazia" id="feed-vazio">Digite e aperte Enter. Suas palavras empilham aqui.</p></div>
+        <div class="blocos" id="pilha-voce" role="list" aria-label="Suas palavras"><p class="pilha-vazia" id="feed-vazio">Suas palavras válidas empilham aqui.</p></div>
       </div>
       <div class="pilha rival">
         <div class="pilha-cab"><span class="rotulo" id="nome-rival-2">Ana</span><span class="rotulo" id="cont-rival">0 palavras</span></div>
@@ -476,6 +481,9 @@ var PECAS = { N01: ['M', '…'], N03: ['·', '·', '·', '·', '·'], N05: ['P',
   P01: ['·', 'U', '…'], P02: ['·', '·', 'R', '…'], P03: ['·', 'L', '…'], P04: ['★', '…', '★'], P05: ['·', 'I', '…'],
   K01: ['…', 'O', '…', 'O', '…'], M01: ['C', '…', 'O'], M02: ['P', '…', 'A'], M04: ['M', '…', 'O'], M06: ['T', '…', '7+'],
   R03: ['A', 'E', 'I', 'O', 'U'] };
+// Duelo do Dia fica desligado no lançamento: precisa de banco real (Supabase) e validação de pontos.
+// O código continua aqui; para ligar, troque para true (o card e o #dia voltam a aparecer).
+var DIA_ATIVO = false;
 var NIVEL_NOME = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil', dia: 'Duelo do Dia' };
 // Adversários simulados: três perfis simples, calibrados a olho (pendente de dados reais).
 var RIVAIS = {
@@ -691,7 +699,7 @@ var pecasNaPilha = new Map();
 function limparPilhas() {
   pecasNaPilha = new Map();
   $('pilha-voce').textContent = ''; $('pilha-rival').textContent = '';
-  var v = el('p', 'pilha-vazia', 'Digite e aperte Enter. Suas palavras empilham aqui.'); v.id = 'feed-vazio';
+  var v = el('p', 'pilha-vazia', 'Suas palavras válidas empilham aqui.'); v.id = 'feed-vazio';
   $('pilha-voce').appendChild(v);
   $('cont-palavras').textContent = '0 palavras'; $('cont-rival').textContent = '0 palavras';
 }
@@ -713,7 +721,9 @@ function desenharPilhas() {
     b.dataset.chave = chave;
     if (voce) { b.setAttribute('role', 'listitem'); b.setAttribute('aria-label', e.digitado + ', mais ' + e.pontos + ' pontos'); }
     pecasNaPilha.set(chave, b);
-    (voce ? $('pilha-voce') : $('pilha-rival')).appendChild(b);
+    var pilha = voce ? $('pilha-voce') : $('pilha-rival');
+    pilha.appendChild(b);
+    pilha.scrollTop = -pilha.scrollHeight; // a peça nova (no alto da pilha) fica sempre à vista
   });
   var vazio = $('feed-vazio'); if (vazio) vazio.hidden = cont['Você'] > 0;
   $('cont-palavras').textContent = cont['Você'] + (cont['Você'] === 1 ? ' palavra' : ' palavras');
@@ -763,11 +773,11 @@ function retornar(e, inp) {
   if (!e) return;
   switch (e.status) {
     case 'Aceita': msg = '+' + e.pontos + ' · ' + e.digitado.toLowerCase(); cls = 'ok'; break;
-    case 'Bloqueada': msg = 'Bloqueada · ' + jogo.rival.nome + ' usou antes'; cls = 'bloq'; break;
-    case 'Já usada': msg = 'Já usada'; cls = 'atencao'; break;
+    case 'Bloqueada': msg = e.digitado.toLowerCase() + ' · ' + jogo.rival.nome + ' usou antes'; cls = 'bloq'; break;
+    case 'Já usada': msg = e.digitado.toLowerCase() + ' · já usada'; cls = 'atencao'; break;
     case 'Empate': msg = 'Empate com ' + jogo.rival.nome + ' · ninguém pontua'; cls = 'atencao'; break;
-    case 'Fora da pista': msg = 'Fora da pista'; cls = 'erro'; break;
-    case 'Não encontrada': msg = existeMemo.get(e.digitado.toLowerCase()) === null ? 'Não vale nesta rodada' : 'Não encontrada'; cls = 'erro'; break;
+    case 'Fora da pista': msg = e.digitado.toLowerCase() + ' · existe, mas não atende à pista'; cls = 'erro'; break;
+    case 'Não encontrada': msg = e.digitado.toLowerCase() + ' · ' + (existeMemo.get(e.digitado.toLowerCase()) === null ? 'não vale nesta rodada' : 'não encontrei essa palavra'); cls = 'erro'; break;
     default: msg = 'Use só letras, 3 ou mais'; cls = 'erro';
   }
   r.appendChild(el('span', 'msg ' + cls, msg));
@@ -818,9 +828,10 @@ function mostrarResumo() {
   var tit = el('h2', 'marca', jogo.dia ? 'Rodada ' + n + ' feita' : pv > pr ? 'Rodada sua' : pv < pr ? 'Rodada de ' + jogo.rival.nome : 'Rodada empatada'); tit.id = 'res-titulo';
   cab.appendChild(tit);
   var pl = el('div', 'res-placar num');
-  pl.appendChild(el('span', 'v', pv));
+  var lado = function (cls, nome, pts) { var d = el('span', 'lado ' + cls); d.appendChild(el('small', 'quem-res', nome)); d.appendChild(el('span', cls, pts)); return d; };
+  pl.appendChild(lado('v', 'Você', pv));
   if (jogo.dia) pl.appendChild(el('span', 'x', 'pontos'));
-  else { pl.appendChild(el('span', 'x', '×')); pl.appendChild(el('span', 'r', pr)); }
+  else { pl.appendChild(el('span', 'x', '×')); pl.appendChild(lado('r', jogo.rival.nome, pr)); }
   cab.appendChild(pl); s.appendChild(cab);
   if (jogo.dia && jogo.dia.avisoSalvar) s.appendChild(el('p', 'erro-carga', jogo.dia.avisoSalvar));
 
@@ -946,20 +957,10 @@ function mostrarFinal() {
   jogo.rodadas.forEach(function (x, i) { var a = x.res.placar['Você'] || 0, b = x.res.placar.rival || 0;
     linhas.push((a > b ? '🟦' : a < b ? '🟧' : '⬜') + ' R' + (i + 1) + '  ' + a + ' × ' + b); });
   linhas.push('Total ' + tv + ' × ' + tr + ' · ' + aceitas + ' palavras');
-  linhas.push('Consegue me vencer?');
   var textoComp = linhas.join('\n');
-  var comp = el('div', 'compartilhar');
-  comp.appendChild(el('span', 'rotulo', 'Compartilhar resultado'));
-  var pre = el('pre', null, textoComp); pre.id = 'texto-compartilhar'; comp.appendChild(pre);
-  var bc = el('button', 'btn btn-secundario btn-largo', 'Copiar resultado'); bc.type = 'button';
-  var okc = el('p', 'ok-copia'); okc.setAttribute('aria-live', 'polite');
-  bc.addEventListener('click', function () {
-    var feito = function () { okc.textContent = 'Copiado. Cole onde quiser compartilhar.'; };
-    var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
-      okc.textContent = 'Texto selecionado. Copie com o menu do aparelho.'; };
-    try { navigator.clipboard.writeText(textoComp).then(feito, falha); } catch (e) { falha(); }
-  });
-  comp.appendChild(bc); comp.appendChild(okc);
+  // o desafio por link (só no Claude) usa as linhas sem o rodapé
+  var textoFinal = textoComp + '\nConsegue me vencer?\n' + URL_OFICIAL + '\nMatutar Games · Ideias que dão jogo.';
+  var comp = blocoCompartilhar(textoFinal, 'Vai o placar de cada rodada e o link do jogo. Nenhuma palavra.');
   // Desafio por link depende do armazenamento do Claude; fora dele, o bloco não aparece.
   if (jogo.desafio) s.appendChild(blocoRespostaDesafio(tv, tr));
   else if (window.claude && claude.use) s.appendChild(blocoCriarDesafio(tv, linhas));
@@ -973,6 +974,34 @@ function mostrarFinal() {
   bm.addEventListener('click', function () { mostrar('tela-inicio'); });
   ac.appendChild(bj); ac.appendChild(bm); s.appendChild(ac);
   mostrar('tela-final');
+}
+
+// ---------- compartilhar resultado (padrão Matutar Games) ----------
+// Celular: janela nativa. Sem ela: copia. Se nada funcionar, o texto aparece selecionado para copiar à mão.
+// Cancelar a janela nativa não conta como compartilhado. O aviso tem linha reservada e não empurra a tela.
+var URL_OFICIAL = 'https://duelo-matutar.netlify.app/';
+function blocoCompartilhar(texto, nota) {
+  var box = el('div', 'compartilhar');
+  box.appendChild(el('p', 'comp-nota', nota));
+  var bt = el('button', 'mt-btn comp-botao', 'Compartilhar resultado'); bt.type = 'button'; bt.id = 'btn-compartilhar';
+  var st = el('p', 'comp-status'); st.id = 'status-compartilhar'; st.setAttribute('role', 'status');
+  var campo = el('textarea', 'comp-texto'); campo.id = 'texto-compartilhar'; campo.readOnly = true; campo.hidden = true; campo.rows = 7;
+  campo.setAttribute('aria-label', 'Texto para compartilhar'); campo.value = texto;
+  var avisar = function (txt, tipo) { st.className = 'comp-status' + (tipo ? ' ' + tipo : ''); st.textContent = txt; };
+  bt.addEventListener('click', function () {
+    avisar('');
+    var copiar = function () {
+      var falha = function () { campo.hidden = false; campo.style.height = campo.scrollHeight + 4 + 'px'; campo.focus(); campo.select();
+        avisar('Não deu para copiar. Copie o texto abaixo.', 'falhou'); };
+      try { navigator.clipboard.writeText(texto).then(function () { avisar('Resultado copiado!', 'ok'); }, falha); } catch (e) { falha(); }
+    };
+    if (navigator.share) {
+      navigator.share({ text: texto }).then(function () { avisar('Resultado compartilhado!', 'ok'); },
+        function (e) { if (!(e && e.name === 'AbortError')) copiar(); });
+    } else copiar();
+  });
+  box.appendChild(bt); box.appendChild(st); box.appendChild(campo);
+  return box;
 }
 
 // ---------- desafio por link (armazenamento compartilhado do artifact) ----------
@@ -1106,7 +1135,7 @@ $('btn-des-voltar').addEventListener('click', function () {
   mostrar('tela-inicio');
 });
 function rotear() {
-  if (location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
+  if (DIA_ATIVO && location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
   var m = /^#d-([A-Za-z0-9_-]{4,80})$/.exec(location.hash || '');
   if (m && !(rod && !rod.acabou)) abrirDesafio(m[1]);
 }
@@ -1370,15 +1399,22 @@ function painelTeste() {
   return box;
 }
 
-carregarCardDia();
+if (DIA_ATIVO) { $('card-dia').hidden = false; $('sep-livre').hidden = false; carregarCardDia(); }
 
 // ---------- teclado do celular: a área do jogo acompanha a parte visível da tela ----------
 function ajustarAltura() {
   var vv = window.visualViewport;
   var h = vv ? vv.height : window.innerHeight;
   var cs = getComputedStyle(document.documentElement);
-  var pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-  document.documentElement.style.setProperty('--alt', Math.max(320, h - pad) + 'px');
+  var padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
+  var alt = Math.max(240, Math.round(h - padT - padB));
+  var raiz = document.documentElement;
+  raiz.style.setProperty('--alt', alt + 'px');
+  // quando o navegador só desloca a parte visível (teclado no Chrome Android), o app acompanha esse deslocamento
+  raiz.style.setProperty('--topo-vv', Math.round((vv ? vv.offsetTop : 0) + padT) + 'px');
+  // pouca altura (teclado aberto ou tela baixa): a partida usa a apresentação compacta
+  raiz.classList.toggle('apertado', alt < 600);
+  raiz.classList.toggle('muito-apertado', alt < 400);
   window.scrollTo(0, 0);
 }
 if (window.visualViewport) { visualViewport.addEventListener('resize', ajustarAltura); visualViewport.addEventListener('scroll', ajustarAltura); }
@@ -1390,4 +1426,12 @@ window.__duelo = { get jogo() { return jogo; }, get rod() { return rod; }, encer
 })();
 </script>
 
+<script src="matutar-ui/matutar-ui.js?v=1.0.0" defer></script>
+<script>
+// Sair no meio de uma rodada perde a rodada; nas telas de início e de fim, sai direto.
+window.matutarSaida = function () {
+  var ativa = ['tela-pre', 'tela-rodada', 'tela-resumo'].some(function (id) { var t = document.getElementById(id); return t && !t.hidden; });
+  return ativa ? 'Você está no meio de um duelo. Se sair agora, a rodada em andamento se perde.' : null;
+};
+</script>
 </body></html>
