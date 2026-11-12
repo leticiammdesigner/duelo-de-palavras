@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Duelo de Palavras</title>
 <meta name="description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos. Um jogo da Matutar Games.">
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -307,7 +307,7 @@ button { font: inherit; color: inherit; }
   .peca-p { height: 26px; font-size: .85rem; }
 }
 </style>
-<link rel="stylesheet" href="duelo-matutar.css?v=2">
+<link rel="stylesheet" href="duelo-matutar.css?v=4">
 
 <div class="app" id="app">
   <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
@@ -721,7 +721,9 @@ function desenharPilhas() {
     b.dataset.chave = chave;
     if (voce) { b.setAttribute('role', 'listitem'); b.setAttribute('aria-label', e.digitado + ', mais ' + e.pontos + ' pontos'); }
     pecasNaPilha.set(chave, b);
-    (voce ? $('pilha-voce') : $('pilha-rival')).appendChild(b);
+    var pilha = voce ? $('pilha-voce') : $('pilha-rival');
+    pilha.appendChild(b);
+    pilha.scrollTop = -pilha.scrollHeight; // a peça nova (no alto da pilha) fica sempre à vista
   });
   var vazio = $('feed-vazio'); if (vazio) vazio.hidden = cont['Você'] > 0;
   $('cont-palavras').textContent = cont['Você'] + (cont['Você'] === 1 ? ' palavra' : ' palavras');
@@ -1386,8 +1388,15 @@ function ajustarAltura() {
   var vv = window.visualViewport;
   var h = vv ? vv.height : window.innerHeight;
   var cs = getComputedStyle(document.documentElement);
-  var pad = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
-  document.documentElement.style.setProperty('--alt', Math.max(320, h - pad) + 'px');
+  var padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);
+  var alt = Math.max(240, Math.round(h - padT - padB));
+  var raiz = document.documentElement;
+  raiz.style.setProperty('--alt', alt + 'px');
+  // quando o navegador só desloca a parte visível (teclado no Chrome Android), o app acompanha esse deslocamento
+  raiz.style.setProperty('--topo-vv', Math.round((vv ? vv.offsetTop : 0) + padT) + 'px');
+  // pouca altura (teclado aberto ou tela baixa): a partida usa a apresentação compacta
+  raiz.classList.toggle('apertado', alt < 600);
+  raiz.classList.toggle('muito-apertado', alt < 400);
   window.scrollTo(0, 0);
 }
 if (window.visualViewport) { visualViewport.addEventListener('resize', ajustarAltura); visualViewport.addEventListener('scroll', ajustarAltura); }
