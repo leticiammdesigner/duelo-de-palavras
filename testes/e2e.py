@@ -4,7 +4,10 @@ Uso:  python3 -m http.server 8795  (na raiz do repositório)
 Capturas de tela (opcional): defina CAPTURAS=/pasta/ para salvar as telas em 360 px.
 """
 import os, sys
+import re
 from playwright.sync_api import sync_playwright
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import compartilhar_comum as comp
 BASE=sys.argv[1].rstrip('/') if len(sys.argv)>1 else 'http://localhost:8795'
 S=os.environ.get('CAPTURAS')
 res=[]
@@ -13,7 +16,7 @@ PAL=['casa','mesa','pato','carro','porta','terra','barco','ponte','festa','papel
 with sync_playwright() as p:
     b=p.chromium.launch()
     for w,h in [(320,568),(360,740),(390,844),(1280,900)]:
-        ctx=b.new_context(viewport={'width':w,'height':h},has_touch=w<500,is_mobile=w<500); pg=ctx.new_page(); err=[]; google=[]
+        ctx=b.new_context(viewport={'width':w,'height':h},has_touch=w<500,is_mobile=w<500); comp.instalar(ctx); pg=ctx.new_page(); err=[]; google=[]
         pg.on('request',lambda r:('fonts.googleapis' in r.url or 'fonts.gstatic' in r.url) and google.append(r.url))
         pg.on('pageerror',lambda e:err.append(str(e))); pg.on('console',lambda m:m.type=='error' and 'fonts.g' not in m.text and 'ERR_TUNNEL' not in m.text and err.append(m.text))
         pg.clock.install()
@@ -54,6 +57,11 @@ with sync_playwright() as p:
         if w==360 and S: pg.screenshot(path=S+'duelo-'+'final.png')
         small=pg.evaluate("[...document.querySelectorAll('button,a')].filter(e=>e.offsetParent&&e.getBoundingClientRect().height<44&&e.getBoundingClientRect().width>0).map(e=>e.textContent.trim().slice(0,18)+':'+Math.round(e.getBoundingClientRect().height))")
         ok(f'[{w}] alvos de toque >= 44px na tela final', not small, small)
+        def regras(txt):
+            vaza=[x for x in PAL if re.search(r'\b'+x+r'\b',txt)]
+            r=txt.startswith('Duelo de Palavras · ') and re.search(r'^(Venci|Perdi para|Empatei com) ',txt,re.M) and len(re.findall(r'^[🟦🟧⬜] R\d',txt,re.M))==4 and 'Consegue me vencer?' in txt and not vaza
+            return bool(r), vaza
+        comp.checar(pg, ok, f'[{w}] compartilhar', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar', 'https://duelo-matutar.netlify.app/', '#tela-final .compartilhar', regras)
         ok(f'[{w}] sem erros de script', not err, err[:3])
         ctx.close()
     ctx=b.new_context(viewport={'width':390,'height':844}); pg=ctx.new_page(); pg.goto(BASE+'/#dia'); pg.wait_for_timeout(800)

@@ -215,7 +215,7 @@ button { font: inherit; color: inherit; }
 .rodadas .perdeu { box-shadow: inset 0 0 0 2px var(--rival); }
 .rodadas .num { font-size: 1.15rem; }
 .compartilhar { background: var(--superficie); border-radius: var(--raio); box-shadow: 0 0 0 1px var(--linha); padding: 14px; display: grid; gap: 10px; }
-.compartilhar pre { margin: 0; font-family: var(--texto); white-space: pre-wrap; font-size: .95rem; user-select: all; }
+.compartilhar pre { margin: 0; font-family: var(--texto); white-space: pre-wrap; overflow-wrap: anywhere; font-size: .95rem; user-select: all; }
 .ok-copia { color: var(--ok); font-weight: 700; font-size: .9rem; min-height: 1.3em; margin: 0; }
 .final .marca { font-size: clamp(3.2rem, 16vw, 5rem); }
 .final .marca.vitoria { color: var(--voce); } .final .marca.derrota { color: var(--rival); }
@@ -307,7 +307,7 @@ button { font: inherit; color: inherit; }
   .peca-p { height: 26px; font-size: .85rem; }
 }
 </style>
-<link rel="stylesheet" href="duelo-matutar.css?v=4">
+<link rel="stylesheet" href="duelo-matutar.css?v=5">
 
 <div class="app" id="app">
   <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
@@ -957,20 +957,10 @@ function mostrarFinal() {
   jogo.rodadas.forEach(function (x, i) { var a = x.res.placar['Você'] || 0, b = x.res.placar.rival || 0;
     linhas.push((a > b ? '🟦' : a < b ? '🟧' : '⬜') + ' R' + (i + 1) + '  ' + a + ' × ' + b); });
   linhas.push('Total ' + tv + ' × ' + tr + ' · ' + aceitas + ' palavras');
-  linhas.push('Consegue me vencer?');
   var textoComp = linhas.join('\n');
-  var comp = el('div', 'compartilhar');
-  comp.appendChild(el('span', 'rotulo', 'Compartilhar resultado'));
-  var pre = el('pre', null, textoComp); pre.id = 'texto-compartilhar'; comp.appendChild(pre);
-  var bc = el('button', 'btn btn-secundario btn-largo', 'Copiar resultado'); bc.type = 'button';
-  var okc = el('p', 'ok-copia'); okc.setAttribute('aria-live', 'polite');
-  bc.addEventListener('click', function () {
-    var feito = function () { okc.textContent = 'Copiado. Cole onde quiser compartilhar.'; };
-    var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
-      okc.textContent = 'Texto selecionado. Copie com o menu do aparelho.'; };
-    try { navigator.clipboard.writeText(textoComp).then(feito, falha); } catch (e) { falha(); }
-  });
-  comp.appendChild(bc); comp.appendChild(okc);
+  // o desafio por link (só no Claude) usa as linhas sem o rodapé
+  var textoFinal = textoComp + '\nConsegue me vencer?\n' + URL_OFICIAL + '\nMatutar Games · Ideias que dão jogo.';
+  var comp = blocoCompartilhar(textoFinal, 'Vai o placar de cada rodada e o link do jogo. Nenhuma palavra.');
   // Desafio por link depende do armazenamento do Claude; fora dele, o bloco não aparece.
   if (jogo.desafio) s.appendChild(blocoRespostaDesafio(tv, tr));
   else if (window.claude && claude.use) s.appendChild(blocoCriarDesafio(tv, linhas));
@@ -984,6 +974,34 @@ function mostrarFinal() {
   bm.addEventListener('click', function () { mostrar('tela-inicio'); });
   ac.appendChild(bj); ac.appendChild(bm); s.appendChild(ac);
   mostrar('tela-final');
+}
+
+// ---------- compartilhar resultado (padrão Matutar Games) ----------
+// Celular: janela nativa. Sem ela: copia. Se nada funcionar, o texto aparece selecionado para copiar à mão.
+// Cancelar a janela nativa não conta como compartilhado. O aviso tem linha reservada e não empurra a tela.
+var URL_OFICIAL = 'https://duelo-matutar.netlify.app/';
+function blocoCompartilhar(texto, nota) {
+  var box = el('div', 'compartilhar');
+  box.appendChild(el('p', 'comp-nota', nota));
+  var bt = el('button', 'mt-btn comp-botao', 'Compartilhar resultado'); bt.type = 'button'; bt.id = 'btn-compartilhar';
+  var st = el('p', 'comp-status'); st.id = 'status-compartilhar'; st.setAttribute('role', 'status');
+  var campo = el('textarea', 'comp-texto'); campo.id = 'texto-compartilhar'; campo.readOnly = true; campo.hidden = true; campo.rows = 7;
+  campo.setAttribute('aria-label', 'Texto para compartilhar'); campo.value = texto;
+  var avisar = function (txt, tipo) { st.className = 'comp-status' + (tipo ? ' ' + tipo : ''); st.textContent = txt; };
+  bt.addEventListener('click', function () {
+    avisar('');
+    var copiar = function () {
+      var falha = function () { campo.hidden = false; campo.style.height = campo.scrollHeight + 4 + 'px'; campo.focus(); campo.select();
+        avisar('Não deu para copiar. Copie o texto abaixo.', 'falhou'); };
+      try { navigator.clipboard.writeText(texto).then(function () { avisar('Resultado copiado!', 'ok'); }, falha); } catch (e) { falha(); }
+    };
+    if (navigator.share) {
+      navigator.share({ text: texto }).then(function () { avisar('Resultado compartilhado!', 'ok'); },
+        function (e) { if (!(e && e.name === 'AbortError')) copiar(); });
+    } else copiar();
+  });
+  box.appendChild(bt); box.appendChild(st); box.appendChild(campo);
+  return box;
 }
 
 // ---------- desafio por link (armazenamento compartilhado do artifact) ----------

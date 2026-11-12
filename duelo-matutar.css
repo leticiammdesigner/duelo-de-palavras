@@ -103,3 +103,14 @@ body { background: var(--mt-fundo); }
 .muito-apertado #tela-rodada .pilha-cab { display: none; }
 .muito-apertado #tela-rodada .pilha { padding-top: 2px; }
 .muito-apertado #tela-rodada .arena { padding-block: 4px 2px; }
+
+/* ---------- compartilhar resultado (padrão Matutar Games, igual nos três jogos) ---------- */
+.compartilhar > * { min-width: 0; }
+.compartilhar .comp-nota { margin: 0; font-size: .92rem; line-height: 1.4; color: var(--mt-tinta-2); }
+.compartilhar .comp-botao { justify-self: start; min-height: 46px; }
+.comp-status { margin: 0; min-height: 1.35em; font-size: .92rem; font-weight: 600; line-height: 1.35; color: var(--mt-tinta-2); }
+.comp-status.ok { color: var(--mt-sucesso); }
+.comp-status.ok::before { content: "✓ "; }
+.comp-texto { width: 100%; box-sizing: border-box; resize: none; margin: 0; padding: 10px 12px; border: 2px solid var(--mt-tinta); border-radius: 10px;
+  background: var(--mt-fundo); color: var(--mt-tinta); font: 15px/1.45 var(--mt-texto); white-space: pre-wrap; overflow-wrap: anywhere; }
+.comp-botao:focus-visible, .comp-texto:focus-visible { outline: 3px solid var(--mt-foco); outline-offset: 3px; }

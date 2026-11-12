@@ -8,7 +8,9 @@ O teclado é simulado de dois jeitos, porque o Chrome Android pode fazer qualque
   visual    a janela fica do mesmo tamanho e só a parte visível encolhe e desce (visualViewport.offsetTop).
 Limitação: não é um aparelho real. Teclado Samsung, barra de sugestões e animação de abertura não são reproduzidos.
 """
-import os, sys
+import os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import compartilhar_comum as comp
 from playwright.sync_api import sync_playwright
 BASE = sys.argv[1].rstrip('/') if len(sys.argv) > 1 else 'http://localhost:8795'
 S = os.environ.get('CAPTURAS')
@@ -57,7 +59,7 @@ with sync_playwright() as p:
     for w, h, teclados in [(360, 780, [330, 400, 460]), (390, 844, [430]), (412, 915, [480])]:
         for modo in ('conteudo', 'visual'):
             ctx = b.new_context(viewport={'width': w, 'height': h}, has_touch=True, is_mobile=True)
-            pg = ctx.new_page(); err = []
+            comp.instalar(ctx); pg = ctx.new_page(); err = []
             pg.on('pageerror', lambda e: err.append(str(e)))
             pg.add_init_script(FALSO_VV.replace('ALTURA', str(h)))
             pg.clock.install(); pg.goto(BASE + '/'); pg.clock.run_for(1500)
@@ -110,6 +112,13 @@ with sync_playwright() as p:
                 bt = pg.locator('#tela-resumo button.btn-primario')
                 if bt.count() and bt.first.is_visible(): bt.first.click(); pg.clock.run_for(800); pg.wait_for_timeout(100)
             ok(f'[{w}x{h} {modo}] quatro rodadas até o resultado', pg.locator('#tela-final').is_visible())
+            if modo == 'conteudo':
+                titulo = pg.inner_text('#fin-titulo')
+                maior = re.search(r'Sua maior palavra: (\S+)\.', pg.inner_text('#tela-final')).group(1)  # nenhuma palavra jogada vai no texto
+                txt = comp.checar(pg, ok, f'[{w}x{h}] compartilhar ({titulo.lower()})', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar',
+                                  'https://duelo-matutar.netlify.app/', '#tela-final .compartilhar',
+                                  lambda t: (bool(re.search(r'^(Venci|Perdi para|Empatei com) ', t, re.M)) and maior not in t, maior))
+                print('   ', titulo, '·', txt.split('\n')[1])
             ok(f'[{w}x{h} {modo}] sem erros de script', not err, err[:3])
             ctx.close()
     b.close()
