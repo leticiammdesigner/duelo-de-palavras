@@ -1,9 +1,9 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Duelo de Palavras</title>
+<meta name="description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos. Um jogo da Matutar Games.">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,400..900&display=swap">
+<link rel="preload" href="fontes/anybody-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:'Anybody';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:50% 150%;src:url(fontes/anybody-latin-variable.woff2) format('woff2-variations'),url(fontes/anybody-latin-variable.woff2) format('woff2')}</style>
 <link rel="stylesheet" href="matutar-ui/matutar-ui.css?v=1.0.0">
 <style>
 /* Layout: um placar de duelo. Faixa de confronto no topo (você em anil, rival em urucum),
@@ -317,7 +317,7 @@ button { font: inherit; color: inherit; }
   <!-- INÍCIO -->
   <section class="tela rolavel inicio" id="tela-inicio" aria-labelledby="titulo-jogo">
     <h1 class="marca" id="titulo-jogo"><span>Duelo</span><span class="de">de</span><span>Palavras</span></h1>
-    <section class="card-dia" id="card-dia" aria-labelledby="dia-titulo">
+    <section class="card-dia" id="card-dia" aria-labelledby="dia-titulo" hidden>
       <div class="topo-dia"><span class="rotulo" id="dia-rotulo">Duelo do Dia</span><span class="selo-teste" id="dia-teste" hidden>Modo de teste</span></div>
       <h2 id="dia-titulo">Carregando o duelo de hoje…</h2>
       <p id="dia-texto">Quatro pistas iguais para todo mundo. Uma tentativa por dia, sem adversária.</p>
@@ -329,7 +329,7 @@ button { font: inherit; color: inherit; }
       <p class="estado" id="dia-estado" aria-live="polite"></p>
       <button class="btn btn-primario btn-largo" id="btn-dia" type="button" hidden>Jogar o duelo de hoje</button>
     </section>
-    <div class="separador rotulo">Partida livre</div>
+    <div class="separador rotulo" id="sep-livre" hidden>Partida livre</div>
     <div class="vs-demo" aria-hidden="true">
       <span class="lado"><span class="ponto voce"></span>Você</span>
       <span class="vs">VS</span>
@@ -481,6 +481,9 @@ var PECAS = { N01: ['M', '…'], N03: ['·', '·', '·', '·', '·'], N05: ['P',
   P01: ['·', 'U', '…'], P02: ['·', '·', 'R', '…'], P03: ['·', 'L', '…'], P04: ['★', '…', '★'], P05: ['·', 'I', '…'],
   K01: ['…', 'O', '…', 'O', '…'], M01: ['C', '…', 'O'], M02: ['P', '…', 'A'], M04: ['M', '…', 'O'], M06: ['T', '…', '7+'],
   R03: ['A', 'E', 'I', 'O', 'U'] };
+// Duelo do Dia fica desligado no lançamento: precisa de banco real (Supabase) e validação de pontos.
+// O código continua aqui; para ligar, troque para true (o card e o #dia voltam a aparecer).
+var DIA_ATIVO = false;
 var NIVEL_NOME = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil', dia: 'Duelo do Dia' };
 // Adversários simulados: três perfis simples, calibrados a olho (pendente de dados reais).
 var RIVAIS = {
@@ -1112,7 +1115,7 @@ $('btn-des-voltar').addEventListener('click', function () {
   mostrar('tela-inicio');
 });
 function rotear() {
-  if (location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
+  if (DIA_ATIVO && location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
   var m = /^#d-([A-Za-z0-9_-]{4,80})$/.exec(location.hash || '');
   if (m && !(rod && !rod.acabou)) abrirDesafio(m[1]);
 }
@@ -1376,7 +1379,7 @@ function painelTeste() {
   return box;
 }
 
-carregarCardDia();
+if (DIA_ATIVO) { $('card-dia').hidden = false; $('sep-livre').hidden = false; carregarCardDia(); }
 
 // ---------- teclado do celular: a área do jogo acompanha a parte visível da tela ----------
 function ajustarAltura() {

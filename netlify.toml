@@ -7,7 +7,18 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+# Dados e calendário mudam sem trocar de nome: o navegador guarda a cópia, mas confere com o
+# servidor antes de usar (304 quando nada mudou, sem baixar de novo). Nada de "immutable".
 [[headers]]
   for = "/dados/*"
   [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+    Cache-Control = "public, max-age=0, must-revalidate"
+# Fontes têm nome fixo e não mudam: podem ficar guardadas por mais tempo.
+[[headers]]
+  for = "/fontes/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
+[[headers]]
+  for = "/matutar-ui/fontes/*"
+  [headers.values]
+    Cache-Control = "public, max-age=2592000"
