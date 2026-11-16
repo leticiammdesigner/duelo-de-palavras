@@ -8,6 +8,7 @@ import re
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import compartilhar_comum as comp
+import caixas
 BASE=sys.argv[1].rstrip('/') if len(sys.argv)>1 else 'http://localhost:8795'
 S=os.environ.get('CAPTURAS')
 res=[]
@@ -26,6 +27,7 @@ with sync_playwright() as p:
         ok(f'[{w}] fonte Anybody local carregada', pg.evaluate("document.fonts.ready.then(()=>document.fonts.check('800 20px Anybody'))") and not google)
         lat=lambda: pg.evaluate('document.documentElement.scrollWidth<=innerWidth')
         ok(f'[{w}] início sem rolagem lateral', lat())
+        caixas.checar(pg, ok, f'[{w}] início')
         ok(f'[{w}] "Todos os jogos" à vista e aponta para a home', pg.get_attribute('.mt-voltar','href')=='https://matutar-games.netlify.app/' and pg.evaluate("document.querySelector('.mt-voltar').getBoundingClientRect().bottom<=innerHeight"))
         ok(f'[{w}] no início, sair não pede confirmação', pg.evaluate('window.matutarSaida()') is None)
         if w==360 and S: pg.screenshot(path=S+'duelo-'+'inicio.png')
@@ -36,6 +38,7 @@ with sync_playwright() as p:
                 pg.clock.run_for(500); pg.wait_for_timeout(150)
         pg.click('#btn-jogar'); ate_rodada()
         ok(f'[{w}] rodada em andamento', pg.locator('#tela-rodada').is_visible())
+        caixas.checar(pg, ok, f'[{w}] rodada')
         ok(f'[{w}] campo de digitar e cabeçalho visíveis na rodada', pg.evaluate("(()=>{const e=document.getElementById('entrada').getBoundingClientRect(),b=document.querySelector('.mt-barra').getBoundingClientRect();return e.bottom<=innerHeight&&e.top>b.bottom-1})()"))
         pg.click('.mt-voltar'); pg.clock.run_for(200)
         ok(f'[{w}] sair no meio do duelo pede confirmação', pg.locator('#mt-aviso[open]').count()==1 and pg.url.startswith(BASE))
@@ -47,6 +50,7 @@ with sync_playwright() as p:
                 pg.fill('#entrada',pw); pg.press('#entrada','Enter'); pg.clock.run_for(300)
             if rodada==0 and w==360 and S: pg.screenshot(path=S+'duelo-'+'rodada.png')
             pg.clock.run_for(62000)
+            caixas.checar(pg, ok, f'[{w}] resumo da rodada {rodada+1}')
             ok(f'[{w}] rodada {rodada+1} terminou no resumo', pg.locator('#tela-resumo').is_visible() or pg.locator('#tela-final').is_visible())
             if rodada==0 and w==360 and S: pg.screenshot(path=S+'duelo-'+'resumo.png')
             bt=pg.locator('#tela-resumo button.btn-primario')
