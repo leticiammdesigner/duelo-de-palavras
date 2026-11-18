@@ -1,6 +1,8 @@
 <!doctype html><html lang="pt-BR"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Duelo de Palavras</title>
 <meta name="description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos. Um jogo da Matutar Games.">
+<link rel="canonical" href="https://matutargames.com.br/duelo/">
+<meta property="og:url" content="https://matutargames.com.br/duelo/">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preload" href="fontes/anybody-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
 <style>@font-face{font-family:'Anybody';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:50% 150%;src:url(fontes/anybody-latin-variable.woff2) format('woff2-variations'),url(fontes/anybody-latin-variable.woff2) format('woff2')}</style>
@@ -311,7 +313,7 @@ button { font: inherit; color: inherit; }
 
 <div class="app" id="app">
   <nav class="mt-barra" aria-label="Matutar Games"><div class="mt-barra-dentro">
-    <a class="mt-voltar" href="https://matutar-games.netlify.app/" data-mt-home><span class="mt-seta" aria-hidden="true">←</span><span class="mt-pecas" aria-hidden="true"><i></i><i></i><i></i></span>Todos os jogos</a>
+    <a class="mt-voltar" href="https://matutargames.com.br/" data-mt-home><span class="mt-seta" aria-hidden="true">←</span><span class="mt-pecas" aria-hidden="true"><i></i><i></i><i></i></span>Todos os jogos</a>
   </div></nav>
 
   <!-- INÍCIO -->
@@ -979,7 +981,7 @@ function mostrarFinal() {
 // ---------- compartilhar resultado (padrão Matutar Games) ----------
 // Celular: janela nativa. Sem ela: copia. Se nada funcionar, o texto aparece selecionado para copiar à mão.
 // Cancelar a janela nativa não conta como compartilhado. O aviso tem linha reservada e não empurra a tela.
-var URL_OFICIAL = 'https://duelo-matutar.netlify.app/';
+var URL_OFICIAL = 'https://matutargames.com.br/duelo/';
 function blocoCompartilhar(texto, nota) {
   var box = el('div', 'compartilhar');
   box.appendChild(el('p', 'comp-nota', nota));

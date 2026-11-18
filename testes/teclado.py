@@ -116,7 +116,7 @@ with sync_playwright() as p:
                 titulo = pg.inner_text('#fin-titulo')
                 maior = re.search(r'Sua maior palavra: (\S+)\.', pg.inner_text('#tela-final')).group(1)  # nenhuma palavra jogada vai no texto
                 txt = comp.checar(pg, ok, f'[{w}x{h}] compartilhar ({titulo.lower()})', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar',
-                                  'https://duelo-matutar.netlify.app/', '#tela-final .compartilhar',
+                                  'https://matutargames.com.br/duelo/', '#tela-final .compartilhar',
                                   lambda t: (bool(re.search(r'^(Venci|Perdi para|Empatei com) ', t, re.M)) and maior not in t, maior))
                 print('   ', titulo, '·', txt.split('\n')[1])
             ok(f'[{w}x{h} {modo}] sem erros de script', not err, err[:3])
