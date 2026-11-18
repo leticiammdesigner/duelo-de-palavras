@@ -28,7 +28,7 @@ with sync_playwright() as p:
         lat=lambda: pg.evaluate('document.documentElement.scrollWidth<=innerWidth')
         ok(f'[{w}] início sem rolagem lateral', lat())
         caixas.checar(pg, ok, f'[{w}] início')
-        ok(f'[{w}] "Todos os jogos" à vista e aponta para a home', pg.get_attribute('.mt-voltar','href')=='https://matutar-games.netlify.app/' and pg.evaluate("document.querySelector('.mt-voltar').getBoundingClientRect().bottom<=innerHeight"))
+        ok(f'[{w}] "Todos os jogos" à vista e aponta para a home', pg.get_attribute('.mt-voltar','href')=='https://matutargames.com.br/' and pg.evaluate("document.querySelector('.mt-voltar').getBoundingClientRect().bottom<=innerHeight"))
         ok(f'[{w}] no início, sair não pede confirmação', pg.evaluate('window.matutarSaida()') is None)
         if w==360 and S: pg.screenshot(path=S+'duelo-'+'inicio.png')
         def ate_rodada():
@@ -65,7 +65,7 @@ with sync_playwright() as p:
             vaza=[x for x in PAL if re.search(r'\b'+x+r'\b',txt)]
             r=txt.startswith('Duelo de Palavras · ') and re.search(r'^(Venci|Perdi para|Empatei com) ',txt,re.M) and len(re.findall(r'^[🟦🟧⬜] R\d',txt,re.M))==4 and 'Consegue me vencer?' in txt and not vaza
             return bool(r), vaza
-        comp.checar(pg, ok, f'[{w}] compartilhar', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar', 'https://duelo-matutar.netlify.app/', '#tela-final .compartilhar', regras)
+        comp.checar(pg, ok, f'[{w}] compartilhar', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar', 'https://matutargames.com.br/duelo/', '#tela-final .compartilhar', regras)
         ok(f'[{w}] sem erros de script', not err, err[:3])
         ctx.close()
     ctx=b.new_context(viewport={'width':390,'height':844}); pg=ctx.new_page(); pg.goto(BASE+'/#dia'); pg.wait_for_timeout(800)

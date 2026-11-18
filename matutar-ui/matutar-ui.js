@@ -5,7 +5,7 @@
  */
 (function () {
   'use strict';
-  var HOME = 'https://matutar-games.netlify.app/';
+  var HOME = 'https://matutargames.com.br/';
   function aviso(msg, destino) {
     var d = document.getElementById('mt-aviso');
     if (!d) {
