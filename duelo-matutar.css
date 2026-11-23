@@ -114,3 +114,11 @@ body { background: var(--mt-fundo); }
 .comp-texto { width: 100%; box-sizing: border-box; resize: none; margin: 0; padding: 10px 12px; border: 2px solid var(--mt-tinta); border-radius: 10px;
   background: var(--mt-fundo); color: var(--mt-tinta); font: 15px/1.45 var(--mt-texto); white-space: pre-wrap; overflow-wrap: anywhere; }
 .comp-botao:focus-visible, .comp-texto:focus-visible { outline: 3px solid var(--mt-foco); outline-offset: 3px; }
+
+/* Link de pular para o conteúdo: fora da tela até receber foco pelo teclado.
+   Mesmo comportamento do Confia? e do Qual o Preço?. */
+.pular-conteudo{position:absolute;left:12px;top:-80px;z-index:10;
+  background:var(--mt-fundo,#FBF6EC);color:var(--mt-tinta,#1E1B2E);
+  border:2px solid currentColor;border-radius:999px;padding:10px 16px;min-height:44px;
+  display:inline-flex;align-items:center;text-decoration:none;font-weight:600}
+.pular-conteudo:focus{top:12px}
