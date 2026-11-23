@@ -1,9 +1,19 @@
 <!doctype html><html lang="pt-BR"><head><meta charset=utf8>
 <script>/* matutargames.com.br/duelo sem a barra final: o Netlify nao distingue /duelo de /duelo/, entao a barra e posta aqui, antes do CSS, senao os caminhos relativos do jogo saem da raiz do dominio. */if(location.pathname==='/duelo')location.replace('/duelo/'+location.search+location.hash)</script><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>Duelo de Palavras</title>
+<title>Duelo de Palavras • Matutar Games</title>
+<a class="pular-conteudo" href="#app">Pular para o jogo</a>
 <meta name="description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos. Um jogo da Matutar Games.">
 <link rel="canonical" href="https://matutargames.com.br/duelo/">
 <meta property="og:url" content="https://matutargames.com.br/duelo/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Matutar Games">
+<meta property="og:title" content="Duelo de Palavras • Matutar Games">
+<meta property="og:description" content="Encontre palavras que seguem as pistas. Quanto mais palavras, mais pontos.">
+<meta property="og:image" content="https://matutargames.com.br/duelo/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#FBF6EC">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preload" href="fontes/anybody-latin-variable.woff2" as="font" type="font/woff2" crossorigin>
 <style>@font-face{font-family:'Anybody';font-style:normal;font-display:swap;font-weight:100 900;font-stretch:50% 150%;src:url(fontes/anybody-latin-variable.woff2) format('woff2-variations'),url(fontes/anybody-latin-variable.woff2) format('woff2')}</style>
@@ -353,7 +363,7 @@ button { font: inherit; color: inherit; }
     <div class="acoes">
       <button class="btn btn-primario btn-largo" id="btn-jogar" type="button">Jogar</button>
       <p class="erro-carga" id="erro-carga" hidden></p>
-      <p class="aviso">Versão de teste. O adversário é simulado e aparece identificado durante o jogo.</p>
+      <p class="aviso">O adversário é simulado e aparece identificado durante o jogo.</p>
     </div>
   </section>
 
@@ -1078,7 +1088,7 @@ function blocoCriarDesafio(total, linhas) {
     } catch (e) {
       bt.disabled = false; bt.textContent = 'Criar link de desafio';
       msg.textContent = e && e.code === 'invalid_argument'
-        ? 'Nesta versão de teste, só a dona do jogo consegue criar desafios. Você ainda pode jogar os desafios que receber.'
+        ? 'Por enquanto, só a dona do jogo cria desafios. Você pode jogar os desafios que receber.'
         : e && e.code === 'quota_exceeded' ? 'O espaço de desafios encheu. Avise quem cuida do jogo.'
         : 'Não consegui salvar agora. Tente de novo em instantes.';
     }
