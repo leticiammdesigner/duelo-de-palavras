@@ -8,6 +8,14 @@ import re
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import compartilhar_comum as comp
+
+def rodadas_do_jogo():
+    """Lê RODADAS do index.html: o teste acompanha o jogo em vez de fixar o número."""
+    import os, re as _re
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    fonte = open(os.path.join(raiz, 'index.html'), encoding='utf-8').read()
+    return int(_re.search(r'RODADAS\s*=\s*(\d+)', fonte).group(1))
+N_RODADAS = rodadas_do_jogo()
 import caixas
 BASE=sys.argv[1].rstrip('/') if len(sys.argv)>1 else 'http://localhost:8795'
 S=os.environ.get('CAPTURAS')
@@ -44,7 +52,7 @@ with sync_playwright() as p:
         ok(f'[{w}] sair no meio do duelo pede confirmação', pg.locator('#mt-aviso[open]').count()==1 and pg.url.startswith(BASE))
         if w==360 and S: pg.screenshot(path=S+'duelo-'+'aviso.png')
         pg.click('#mt-aviso button[value=ficar]'); pg.clock.run_for(200)
-        for rodada in range(4):
+        for rodada in range(N_RODADAS):
             ate_rodada()
             for pw in PAL[:6]:
                 pg.fill('#entrada',pw); pg.press('#entrada','Enter'); pg.clock.run_for(300)
@@ -63,7 +71,8 @@ with sync_playwright() as p:
         ok(f'[{w}] alvos de toque >= 44px na tela final', not small, small)
         def regras(txt):
             vaza=[x for x in PAL if re.search(r'\b'+x+r'\b',txt)]
-            r=txt.startswith('Duelo de Palavras · ') and re.search(r'^(Venci|Perdi para|Empatei com) ',txt,re.M) and len(re.findall(r'^[🟦🟧⬜] R\d',txt,re.M))==4 and 'Consegue me vencer?' in txt and not vaza
+            # uma linha de placar por rodada: o número sai de RODADAS, não fica fixo aqui
+            r=txt.startswith('Duelo de Palavras · ') and re.search(r'^(Venci|Perdi para|Empatei com) ',txt,re.M) and len(re.findall(r'^[🟦🟧⬜] R\d',txt,re.M))==N_RODADAS and 'Consegue me vencer?' in txt and not vaza
             return bool(r), vaza
         comp.checar(pg, ok, f'[{w}] compartilhar', '#btn-compartilhar', '#status-compartilhar', '#texto-compartilhar', 'https://matutargames.com.br/duelo/', '#tela-final .compartilhar', regras)
         ok(f'[{w}] sem erros de script', not err, err[:3])
