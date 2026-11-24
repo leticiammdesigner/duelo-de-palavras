@@ -150,6 +150,19 @@ body { background: var(--mt-fundo); }
   .app > .mt-barra { position: relative; }
   .app > .mt-barra::before { content: ""; position: absolute; inset: 0 -50vw; z-index: -1;
     background: var(--mt-fundo); border-bottom: var(--mt-traco); }
+
+  /* As pilhas crescem de baixo para cima e esticavam para ocupar toda a altura que sobrasse.
+   * Numa janela de 1200px isso virava duas caixas de quase 800px praticamente vazias dominando
+   * a rodada. Aqui elas param de crescer e a rodada inteira se centra na altura, então a sobra
+   * fica repartida em cima e embaixo, em fundo liso.
+   *
+   * Prendê-las embaixo em vez de centrar foi a primeira tentativa e ficou pior: o vazio virava
+   * um buraco de 350px entre a pista e as pilhas.
+   *
+   * O limite só aperta onde há altura demais e, passando dele, a pilha rola por dentro, como
+   * sempre fez. A arena não muda de tamanho no meio da rodada, então o campo não dança. */
+  #tela-rodada { justify-content: center; }
+  #tela-rodada .arena { max-height: min(440px, 46vh); }
 }
 
 /* rolagem interna discreta: no celular a barra já é invisível, no desktop ela denunciava a caixa */

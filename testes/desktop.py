@@ -91,10 +91,33 @@ with sync_playwright() as p:
     dentro = pg.evaluate("""() => {
       const app = document.getElementById('app').getBoundingClientRect();
       const campo = document.getElementById('entrada').getBoundingClientRect();
-      return { campoDentro: campo.bottom <= app.bottom + 2, appNaTela: app.height <= window.innerHeight + 2 };
+      const arena = document.querySelector('#tela-rodada .arena').getBoundingClientRect();
+      return { campoDentro: campo.bottom <= app.bottom + 2, appNaTela: app.height <= window.innerHeight + 2,
+               arena: Math.round(arena.height) };
     }""")
     ok('o campo de digitar continua preso dentro da tela', dentro['campoDentro'])
     ok('o app continua cabendo na altura da janela', dentro['appNaTela'])
+
+    # Em janela alta é que as pilhas esticavam: iam a quase 800px quase vazias. A 850 de altura
+    # a arena já era pequena, então a checagem só vale alguma coisa numa janela grande.
+    alta = b.new_page(viewport={'width': 1366, 'height': 1200})
+    alta.goto(BASE, wait_until='networkidle')
+    alta.click('#btn-jogar')
+    for _ in range(40):
+        if alta.locator('#btn-valendo').is_visible(): alta.click('#btn-valendo')
+        if alta.locator('#tela-rodada').is_visible() and alta.locator('#entrada').is_enabled(): break
+        alta.wait_for_timeout(200)
+    m = alta.evaluate("""() => {
+      const a = document.querySelector('#tela-rodada .arena').getBoundingClientRect();
+      const campo = document.getElementById('entrada').getBoundingClientRect();
+      const pista = document.querySelector('#tela-rodada .pista').getBoundingClientRect();
+      return { arena: Math.round(a.height), buraco: Math.round(a.top - pista.bottom),
+               sobraEmbaixo: Math.round(window.innerHeight - campo.bottom) };
+    }""")
+    ok('em janela alta as pilhas não esticam pela tela toda', m['arena'] <= 460, m['arena'])
+    # a primeira tentativa prendia a arena embaixo e abria um buraco de 350px aqui
+    ok('não sobra um buraco entre a pista e as pilhas', m['buraco'] <= 40, m['buraco'])
+    ok('a rodada fica centrada, com sobra também embaixo', m['sobraEmbaixo'] >= 40, m['sobraEmbaixo'])
 
     # ---------------- celular: nada pode ter mudado ----------------
     cel = b.new_page(viewport={'width': 390, 'height': 844})
