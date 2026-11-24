@@ -107,8 +107,11 @@ with sync_playwright() as p:
 
     texto = (partilhado or {}).get('text', '')
     ok('o convite não manda o endereço duas vezes', texto.count('#d=') == 1, texto.count('#d='))
-    ok('o convite traz o placar com os quadradinhos', texto.count('R1') == 1 and ('🟦' in texto or '🟧' in texto or '⬜' in texto))
-    ok('o convite tem uma linha por rodada', sum(texto.count('R%d' % (i + 1)) for i in range(N_RODADAS)) == N_RODADAS)
+    ok('o convite traz o placar com os quadradinhos', bool(re.search(r'^[🟦🟧⬜] R1 ', texto, re.M)))
+    # Conta só as linhas de placar. Procurar "R1" no texto inteiro é instável: o link vai junto
+    # na mensagem e o base64 dele às vezes contém essa sequência por acaso.
+    placares = re.findall(r'^[🟦🟧⬜] R(\d)', texto, re.M)
+    ok('o convite tem uma linha por rodada', placares == [str(i + 1) for i in range(N_RODADAS)], placares)
     ok('o convite não fala do adversário simulado', 'simulado' not in texto.lower(), texto[:80])
 
     link = [l for l in texto.split('\n') if '#d=' in l]
