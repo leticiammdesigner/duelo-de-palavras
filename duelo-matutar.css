@@ -157,7 +157,7 @@ body { background: var(--mt-fundo); }
    * fica repartida em cima e embaixo, em fundo liso.
    *
    * Prendê-las embaixo em vez de centrar foi a primeira tentativa e ficou pior: o vazio virava
-   * um buraco de 350px entre a pista e as pilhas.
+   * um buraco de 344px entre a pista e as pilhas.
    *
    * O limite só aperta onde há altura demais e, passando dele, a pilha rola por dentro, como
    * sempre fez. A arena não muda de tamanho no meio da rodada, então o campo não dança. */
