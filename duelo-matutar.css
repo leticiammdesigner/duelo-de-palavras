@@ -129,14 +129,23 @@ body { background: var(--mt-fundo); }
  * uma coluna de 560px solta sobre o fundo, com a barra da casa encolhida junto, e destoava do
  * Confia? e do Qual o Preço?, onde a barra atravessa a tela.
  *
- * Aqui, e só acima de 760px, três coisas mudam, todas visuais:
+ * Acima de 760px, três coisas mudam, todas visuais:
  *   1. a faixa da barra volta a atravessar a tela, usando a altura real da barra
- *   2. a página fica um tom mais escura que o app, e o app ganha traço nas laterais: vira tabuleiro
+ *   2. a página fica um tom mais escura que a coluna, e a coluna ganha traço dos dois lados
  *   3. um pouco mais de largura, que a lista de palavras agradece
- * No celular nada disso vale: a media query inteira fica de fora. */
+ * No celular a media query inteira fica de fora.
+ *
+ * Por que o fundo da coluna é pintado por trás, no ::after do body, e não no próprio .app:
+ * o .app é a janela do jogo, não um cartão de conteúdo, e o conteúdo das telas rola por dentro
+ * dele. Dar fundo ao .app o transformaria numa caixa com overflow visível, e aí tudo que está
+ * rolado para fora da janela contaria como texto vazando (ver testes/caixas.py). O traço lateral
+ * pode ficar no .app porque o checador só considera borda de cima e de baixo. */
 @media (min-width: 760px) {
   body { background: var(--mt-superficie-2); }
-  .app { max-width: 640px; background: var(--mt-fundo); border-inline: var(--mt-traco); }
+  .app { max-width: 640px; border-inline: var(--mt-traco); }
+  /* a coluna clara, atrás de tudo */
+  body::after { content: ""; position: fixed; inset: 0; width: 640px; margin-inline: auto;
+    background: var(--mt-fundo); z-index: -1; pointer-events: none; }
   /* a faixa é pintada pela própria barra, então acompanha a altura dela sem número mágico */
   .app > .mt-barra { position: relative; }
   .app > .mt-barra::before { content: ""; position: absolute; inset: 0 -50vw; z-index: -1;

@@ -17,18 +17,32 @@ res = []
 def ok(n, c, x=''):
     res.append(bool(c)); print(('OK  ' if c else 'FALHA ') + n + (' · ' + str(x) if not c and x != '' else ''))
 
+def px(v):
+    """'640px' -> 640.0; 'auto', 'none' e vazio -> 0.0 (o valor que um bloco ausente devolve)."""
+    try:
+        return float(str(v).replace('px', ''))
+    except ValueError:
+        return 0.0
+
+def opaca(cor):
+    """Cor de fundo que realmente pinta algo (um pseudo-elemento ausente devolve transparente)."""
+    return bool(cor) and cor not in ('rgba(0, 0, 0, 0)', 'transparent')
+
 def medir(pg):
     return pg.evaluate("""() => {
       const app = document.getElementById('app');
       const barra = app.querySelector('.mt-barra');
       const faixa = getComputedStyle(barra, '::before');
       const ea = getComputedStyle(app);
+      const coluna = getComputedStyle(document.body, '::after');
       return {
         larguraApp: app.getBoundingClientRect().width,
         larguraTela: document.documentElement.clientWidth,
         bordaEsq: parseFloat(ea.borderLeftWidth), bordaDir: parseFloat(ea.borderRightWidth),
         fundoApp: ea.backgroundColor, fundoPagina: getComputedStyle(document.body).backgroundColor,
-        faixaLargura: faixa.width, faixaBorda: parseFloat(faixa.borderBottomWidth) || 0,
+        fundoColuna: coluna.backgroundColor, larguraColuna: coluna.width,
+        bordaCimaApp: parseFloat(ea.borderTopWidth), bordaBaixoApp: parseFloat(ea.borderBottomWidth),
+        faixaLargura: faixa.width, faixaFundo: faixa.backgroundColor, faixaBorda: parseFloat(faixa.borderBottomWidth) || 0,
         rolagemH: document.documentElement.scrollWidth > document.documentElement.clientWidth
       };
     }""")
@@ -47,12 +61,22 @@ with sync_playwright() as p:
     ok('a coluna do jogo não ocupa a tela toda', 560 <= d['larguraApp'] <= 760, d['larguraApp'])
     ok('a coluna tem traço dos dois lados', d['bordaEsq'] >= 1 and d['bordaDir'] >= 1,
        (d['bordaEsq'], d['bordaDir']))
-    ok('a página é de um tom diferente da coluna', d['fundoApp'] != d['fundoPagina'],
-       (d['fundoApp'], d['fundoPagina']))
+    ok('a coluna é pintada e de um tom diferente da página',
+       opaca(d['fundoColuna']) and d['fundoColuna'] != d['fundoPagina'],
+       (d['fundoColuna'], d['fundoPagina']))
+    ok('a coluna pintada tem a largura da coluna do jogo',
+       abs(px(d['larguraColuna']) - d['larguraApp']) <= 4, (d['larguraColuna'], d['larguraApp']))
+    # O fundo da coluna fica no ::after do body de propósito. Com fundo ou borda horizontal no
+    # .app, o checador de testes/caixas.py passa a tratar a janela do jogo como um cartão de
+    # conteúdo e acusa como vazamento tudo que está rolado para fora dela.
+    ok('a janela do jogo não vira cartão de conteúdo',
+       d['fundoApp'] in ('rgba(0, 0, 0, 0)', 'transparent')
+       and d['bordaCimaApp'] == 0 and d['bordaBaixoApp'] == 0,
+       (d['fundoApp'], d['bordaCimaApp'], d['bordaBaixoApp']))
     # a faixa é pintada pelo ::before da barra, esticado para além da coluna
-    largura_faixa = float((d['faixaLargura'] or '0px').replace('px', ''))
-    ok('a faixa da barra atravessa a tela', largura_faixa >= d['larguraTela'],
-       (largura_faixa, d['larguraTela']))
+    ok('a faixa da barra atravessa a tela',
+       opaca(d['faixaFundo']) and px(d['faixaLargura']) >= d['larguraTela'],
+       (d['faixaFundo'], d['faixaLargura'], d['larguraTela']))
     ok('a faixa fecha com a linha de baixo, como nos outros jogos', d['faixaBorda'] >= 1, d['faixaBorda'])
     ok('nada empurra a página na horizontal', not d['rolagemH'])
     ok('abrir no desktop não gera erro de script', not erros, erros[:2])
