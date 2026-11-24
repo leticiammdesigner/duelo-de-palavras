@@ -122,3 +122,26 @@ body { background: var(--mt-fundo); }
   border:2px solid currentColor;border-radius:999px;padding:10px 16px;min-height:44px;
   display:inline-flex;align-items:center;text-decoration:none;font-weight:600}
 .pular-conteudo:focus{top:12px}
+
+/* ---------- desktop: o tabuleiro vira escolha, não sobra (24/11/2026) ----------
+ * O Duelo é um app de tela cheia: altura fixa, campo preso embaixo, pilhas rolando por dentro.
+ * Isso é a mecânica da rodada e não vira página que rola. Mas numa tela larga o app ficava como
+ * uma coluna de 560px solta sobre o fundo, com a barra da casa encolhida junto, e destoava do
+ * Confia? e do Qual o Preço?, onde a barra atravessa a tela.
+ *
+ * Aqui, e só acima de 760px, três coisas mudam, todas visuais:
+ *   1. a faixa da barra volta a atravessar a tela, usando a altura real da barra
+ *   2. a página fica um tom mais escura que o app, e o app ganha traço nas laterais: vira tabuleiro
+ *   3. um pouco mais de largura, que a lista de palavras agradece
+ * No celular nada disso vale: a media query inteira fica de fora. */
+@media (min-width: 760px) {
+  body { background: var(--mt-superficie-2); }
+  .app { max-width: 640px; background: var(--mt-fundo); border-inline: var(--mt-traco); }
+  /* a faixa é pintada pela própria barra, então acompanha a altura dela sem número mágico */
+  .app > .mt-barra { position: relative; }
+  .app > .mt-barra::before { content: ""; position: absolute; inset: 0 -50vw; z-index: -1;
+    background: var(--mt-fundo); border-bottom: var(--mt-traco); }
+}
+
+/* rolagem interna discreta: no celular a barra já é invisível, no desktop ela denunciava a caixa */
+.rolavel, .feed, .blocos, .peca-ps { scrollbar-width: thin; scrollbar-color: var(--mt-linha) transparent; }
