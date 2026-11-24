@@ -974,9 +974,9 @@ function mostrarFinal() {
   // o desafio por link (só no Claude) usa as linhas sem o rodapé
   var textoFinal = textoComp + '\nConsegue me vencer?\n' + URL_OFICIAL + '\nMatutar Games · Ideias que dão jogo.';
   var comp = blocoCompartilhar(textoFinal, 'Vai o placar de cada rodada e o link do jogo. Nenhuma palavra.');
-  // Desafio por link depende do armazenamento do Claude; fora dele, o bloco não aparece.
+  // A gravação vai dentro do link, então o desafio funciona em qualquer lugar onde o jogo abra.
   if (jogo.desafio) s.appendChild(blocoRespostaDesafio(tv, tr));
-  else if (window.claude && claude.use) s.appendChild(blocoCriarDesafio(tv, linhas));
+  else s.appendChild(blocoCriarDesafio(tv, linhas));
   s.appendChild(comp);
 
   var ac = el('div', 'acoes');
@@ -1021,6 +1021,46 @@ function blocoCompartilhar(texto, nota) {
 // Endereço do próprio jogo, onde quer que esteja publicado (Netlify ou Claude).
 var LINK_BASE = /^https?:$/.test(location.protocol) ? location.origin + location.pathname : 'https://claude.ai/artifact/AJ8Ruq2g9WeQZ4N5tzniAe';
 var PISTAS_VALIDAS = new Set(CATALOGO.map(function (x) { return x[0]; }));   // desafios antigos continuam válidos: nenhuma pista saiu
+// ---------- a gravação viaja dentro do link ----------
+// Não há banco: o desafio inteiro vai na URL, comprimido. Uma partida típica dá ~280
+// caracteres, e a pior que dá para jogar em quatro minutos não passa de ~600. Quem recebe
+// joga sem depender de servidor nenhum, e o link não expira nem pode ser apagado.
+function b64url(bytes) {
+  var s = '', i;
+  for (i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function deB64url(t) {
+  var s = String(t).replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  var bin = atob(s), out = new Uint8Array(bin.length), i;
+  for (i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function empacotar(doc) {
+  var bytes = new TextEncoder().encode(JSON.stringify(doc));
+  if (typeof CompressionStream === 'function') {
+    try {
+      var cs = new CompressionStream('deflate-raw');
+      var w = cs.writable.getWriter();
+      w.write(bytes).catch(function () {}); w.close().catch(function () {});
+      return 'c' + b64url(new Uint8Array(await new Response(cs.readable).arrayBuffer()));
+    } catch (e) { /* navegador com a API mas sem deflate-raw: cai no formato cru */ }
+  }
+  return 'p' + b64url(bytes);          // sem compressão o link fica maior, o jogo é o mesmo
+}
+async function desempacotar(txt) {
+  var modo = String(txt).charAt(0), corpo = deB64url(String(txt).slice(1));
+  if (modo === 'c') {
+    var ds = new DecompressionStream('deflate-raw');
+    var w = ds.writable.getWriter();
+    w.write(corpo).catch(function () {}); w.close().catch(function () {});
+    return JSON.parse(await new Response(ds.readable).text());
+  }
+  if (modo === 'p') return JSON.parse(new TextDecoder().decode(corpo));
+  throw new Error('formato de link desconhecido');
+}
+
 var dbPromessa = null;
 function pegarDb() {
   if (!dbPromessa) dbPromessa = (window.claude && claude.use ? claude.use('db') : Promise.resolve(null)).catch(function () { return null; });
@@ -1061,20 +1101,20 @@ function blocoCriarDesafio(total, linhas) {
     var apelido = limparApelido(inp.value);
     if (!apelido) { msg.textContent = 'Escreva um apelido para a outra pessoa saber quem desafiou.'; inp.focus(); return; }
     try { localStorage.setItem('duelo-apelido', apelido); } catch (e) {}
-    bt.disabled = true; bt.textContent = 'Salvando a partida…'; msg.textContent = '';
-    var db = await pegarDb();
-    if (!db) { bt.disabled = false; bt.textContent = 'Criar link de desafio';
-      msg.textContent = 'O desafio precisa do armazenamento da página, que só funciona com a página aberta no Claude, com a conta conectada.'; return; }
-    var doc = { versao: 1, motor: 'v0.4', criado: Date.now(), apelido: apelido, nivel: jogo.nivel, pistas: jogo.ids.slice(), total: total,
+    bt.disabled = true; bt.textContent = 'Montando o link…'; msg.textContent = '';
+    var doc = { versao: 2, motor: 'v0.4', criado: Date.now(), apelido: apelido, nivel: jogo.nivel, pistas: jogo.ids.slice(), total: total,
       rodadas: jogo.rodadas.map(function (x) { return { entradas: x.minhas.map(function (m) { return { t: m[0], w: m[1] }; }) }; }) };
     try {
-      var ref = db.collection('desafios').doc();
-      await comPrazo(ref.set(doc), 12000);
-      var link = LINK_BASE + '#d-' + ref.id;
+      var pacote = await empacotar(doc);
+      var link = LINK_BASE + '#d=' + pacote;
       box.textContent = '';
       box.appendChild(el('span', 'rotulo', 'Desafio criado'));
       var pre = el('p', 'link-desafio', link); box.appendChild(pre);
-      var texto = linhas.slice(0, -1).concat(['Consegue me vencer? ' + link]).join('\n');
+      // O convite fala com quem vai jogar contra esta gravação, então a linha do resultado
+      // contra o simulado não serve: o que interessa para quem recebe é o alvo a bater.
+      var texto = ['Duelo de Palavras · ' + NIVEL_NOME[jogo.nivel], 'Gravei minha partida: ' + total + ' pontos.']
+        .concat(linhas.slice(2, -1))
+        .concat(['', 'Consegue me vencer?', link]).join('\n');
       var bc = el('button', 'btn btn-primario btn-largo', 'Copiar convite com o link'); bc.type = 'button';
       var ok = el('p', 'ok-copia'); ok.setAttribute('aria-live', 'polite');
       bc.addEventListener('click', function () {
@@ -1084,13 +1124,10 @@ function blocoCriarDesafio(total, linhas) {
         try { navigator.clipboard.writeText(texto).then(feito, falha); } catch (e) { falha(); }
       });
       box.appendChild(bc); box.appendChild(ok);
-      box.appendChild(el('p', 'aviso', 'Quem receber precisa conseguir abrir esta página: compartilhe o jogo pelo menu Compartilhar do Claude.'));
+      box.appendChild(el('p', 'aviso', 'A partida inteira vai dentro do link, então ele é comprido. Mande inteiro, sem cortar.'));
     } catch (e) {
       bt.disabled = false; bt.textContent = 'Criar link de desafio';
-      msg.textContent = e && e.code === 'invalid_argument'
-        ? 'Por enquanto, só a dona do jogo cria desafios. Você pode jogar os desafios que receber.'
-        : e && e.code === 'quota_exceeded' ? 'O espaço de desafios encheu. Avise quem cuida do jogo.'
-        : 'Não consegui salvar agora. Tente de novo em instantes.';
+      msg.textContent = 'Não consegui montar o link agora. Tente de novo em instantes.';
     }
   });
   return box;
@@ -1111,26 +1148,39 @@ function blocoRespostaDesafio(tv, tr) {
   return box;
 }
 
-async function abrirDesafio(id) {
+// Duas origens de desafio. 'pacote' é o formato de hoje, com a gravação dentro do link.
+// 'id' é o formato antigo, que buscava no armazenamento do Claude: os links criados lá
+// continuam abrindo enquanto o jogo estiver aberto dentro do Claude.
+async function abrirDesafio(origem) {
   mostrar('tela-desafio');
   $('des-titulo').textContent = 'Abrindo o desafio…'; $('des-texto').textContent = '';
   $('des-alvo').hidden = true; $('des-regras').hidden = true; $('btn-aceitar').hidden = true;
-  var db = await pegarDb();
-  if (!db) {
-    $('des-titulo').textContent = 'Desafio indisponível';
-    $('des-texto').textContent = 'Para jogar um desafio, abra este link no Claude com a sua conta conectada.';
-    return;
-  }
-  var d = null;
-  try { var snap = await comPrazo(db.doc('desafios/' + id).get(), 10000); d = snap.exists ? validarDesafio(snap.data()) : null; }
-  catch (e) {
-    $('des-titulo').textContent = 'Não consegui abrir';
-    $('des-texto').textContent = 'O desafio não carregou agora. Confira a conexão e abra o link de novo.';
-    return;
+  var d = null, id = null;
+  if (origem.pacote) {
+    try { d = validarDesafio(await desempacotar(origem.pacote)); }
+    catch (e) {
+      $('des-titulo').textContent = 'Link incompleto';
+      $('des-texto').textContent = 'A partida vem dentro do link, e este chegou cortado. Peça para mandarem de novo, inteiro.';
+      return;
+    }
+  } else {
+    id = origem.id;
+    var db = await pegarDb();
+    if (!db) {
+      $('des-titulo').textContent = 'Desafio indisponível';
+      $('des-texto').textContent = 'Este é um link antigo, que só abre dentro do Claude. Peça um link novo para quem te desafiou.';
+      return;
+    }
+    try { var snap = await comPrazo(db.doc('desafios/' + id).get(), 10000); d = snap.exists ? validarDesafio(snap.data()) : null; }
+    catch (e) {
+      $('des-titulo').textContent = 'Não consegui abrir';
+      $('des-texto').textContent = 'O desafio não carregou agora. Confira a conexão e abra o link de novo.';
+      return;
+    }
   }
   if (!d) {
     $('des-titulo').textContent = 'Desafio não encontrado';
-    $('des-texto').textContent = 'O link pode estar incompleto ou o desafio foi apagado. Peça um link novo para quem te desafiou.';
+    $('des-texto').textContent = 'O link pode estar incompleto ou a partida não bate com o jogo de hoje. Peça um link novo para quem te desafiou.';
     return;
   }
   d.id = id;
@@ -1149,8 +1199,12 @@ $('btn-des-voltar').addEventListener('click', function () {
 });
 function rotear() {
   if (DIA_ATIVO && location.hash === '#dia' && !(rod && !rod.acabou)) { mostrar('tela-inicio'); $('card-dia').scrollIntoView(); return; }
-  var m = /^#d-([A-Za-z0-9_-]{4,80})$/.exec(location.hash || '');
-  if (m && !(rod && !rod.acabou)) abrirDesafio(m[1]);
+  if (rod && !rod.acabou) return;                       // partida em andamento não é interrompida
+  var h = location.hash || '';
+  var novo = /^#d=([A-Za-z0-9_-]{8,6000})$/.exec(h);    // gravação dentro do link
+  if (novo) { abrirDesafio({ pacote: novo[1] }); return; }
+  var antigo = /^#d-([A-Za-z0-9_-]{4,80})$/.exec(h);    // link criado antes, guardado no Claude
+  if (antigo) abrirDesafio({ id: antigo[1] });
 }
 window.addEventListener('hashchange', rotear);
 rotear();
