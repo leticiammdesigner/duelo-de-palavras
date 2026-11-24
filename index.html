@@ -1130,8 +1130,18 @@ function blocoCriarDesafio(total, linhas) {
     if (!apelido) { msg.textContent = 'Escreva um apelido para a outra pessoa saber quem desafiou.'; inp.focus(); return; }
     try { localStorage.setItem('duelo-apelido', apelido); } catch (e) {}
     bt.disabled = true; bt.textContent = 'Montando o link…'; msg.textContent = '';
-    var doc = { versao: 2, motor: 'v0.4', criado: Date.now(), apelido: apelido, nivel: jogo.nivel, pistas: jogo.ids.slice(), total: total,
-      rodadas: jogo.rodadas.map(function (x) { return { entradas: x.minhas.map(function (m) { return { t: m[0], w: m[1] }; }) }; }) };
+    // Na gravação entra só o que valeria sozinho. Tentativa recusada ou palavra repetida não
+    // pontua nem bloqueia nada do outro lado: só engorda o link. Quem decide é o próprio motor,
+    // resolvendo a rodada sem rival nenhum, como a restauração de partida já faz.
+    var doc = { versao: 3, apelido: apelido, nivel: jogo.nivel, pistas: jogo.ids.slice(), total: total,
+      rodadas: jogo.rodadas.map(function (x, k) {
+        var valem = new Set();
+        M.resolver({ 'Você': x.minhas, rival: [] }, jogo.pistas[k], existeSinc).entradas.forEach(function (e) {
+          if (e.jogador === 'Você' && e.status === 'Aceita') valem.add(e.t + '|' + e.digitado);
+        });
+        return { entradas: x.minhas.filter(function (m) { return valem.has(m[0] + '|' + m[1]); })
+                                   .map(function (m) { return { t: m[0], w: m[1] }; }) };
+      }) };
     try {
       var pacote = await empacotar(doc);
       var link = LINK_BASE + '#d=' + pacote;

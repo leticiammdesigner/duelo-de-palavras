@@ -28,6 +28,23 @@ res = []
 def ok(n, c, x=''):
     res.append(bool(c)); print(('OK  ' if c else 'FALHA ') + n + (' · ' + str(x) if not c and x != '' else ''))
 
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+def palavras_da_pista(frase, quantas=4):
+    """Devolve palavras que valem na pista que está na tela.
+
+    Antes o teste digitava palavras genéricas. Numa pista como "têm exatamente três
+    letras" nenhuma delas valia, e como a gravação levava até o que foi recusado, o teste
+    passava sem nunca ter exercitado o caminho de verdade.
+    """
+    import glob, json as _json
+    frase = ' '.join((frase or '').split()).lower()
+    for caminho in glob.glob(os.path.join(RAIZ, 'dados', '*.json')):
+        d = _json.load(open(caminho, encoding='utf-8'))
+        if ' '.join(str(d.get('pista', '')).split()).lower() == frase:
+            return [p[0] for p in d['bot'][:quantas * 4]][:quantas]
+    return []
+
 def ate_rodada(pg):
     for _ in range(60):
         if pg.locator('#btn-valendo').is_visible(): pg.click('#btn-valendo')
@@ -59,8 +76,11 @@ with sync_playwright() as p:
     minhas = []
     for rodada in range(N_RODADAS):
         ate_rodada(pg)
+        frase = (pg.text_content('#rod-frase') or '').strip()
+        palavras = palavras_da_pista(frase)
+        ok('rodada %d: achei palavras que valem nesta pista' % (rodada + 1), len(palavras) >= 3, frase)
         destaRodada = []
-        for pw in PAL[:4]:
+        for pw in palavras:
             pg.fill('#entrada', pw); pg.press('#entrada', 'Enter'); pg.clock.run_for(300)
             destaRodada.append(pw)
         minhas.append(destaRodada)
