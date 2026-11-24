@@ -4,7 +4,7 @@ Faz o ciclo que a jogadora faz pelo WhatsApp, do começo ao fim: joga uma partid
 cria o link, abre esse link num navegador limpo e confere que a gravação chegou inteira, com
 as mesmas pistas e as mesmas palavras nos mesmos tempos.
 
-O relógio é virtual, então a partida de quatro minutos roda em segundos.
+O relógio é virtual, então a partida de três minutos roda em segundos.
 
 Uso:  python3 -m http.server 8795   (na raiz do repositório)
       python3 testes/desafio-por-link.py http://localhost:8795
@@ -13,6 +13,14 @@ import os, re, sys
 from playwright.sync_api import sync_playwright
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import compartilhar_comum as comp
+
+def rodadas_do_jogo():
+    """Lê RODADAS do index.html: o teste acompanha o jogo em vez de fixar o número."""
+    import os, re as _re
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    fonte = open(os.path.join(raiz, 'index.html'), encoding='utf-8').read()
+    return int(_re.search(r'RODADAS\s*=\s*(\d+)', fonte).group(1))
+N_RODADAS = rodadas_do_jogo()
 
 BASE = sys.argv[1].rstrip('/') if len(sys.argv) > 1 else 'http://localhost:8795'
 PAL = ['casa', 'mesa', 'pato', 'carro', 'porta', 'terra', 'barco', 'ponte', 'festa', 'papel']
@@ -32,6 +40,15 @@ with sync_playwright() as p:
     # ---------------- quem desafia: joga e gera o link ----------------
     ctx = b.new_context(viewport={'width': 390, 'height': 844})
     comp.instalar(ctx)
+    # O compartilhamento nativo abre um menu do sistema que o Playwright não controla. Aqui ele
+    # é trocado por um espião, instalado antes de a página rodar, que guarda o que seria enviado.
+    ctx.add_init_script('''
+      window.__partilhado = null;
+      Object.defineProperty(navigator, 'share', {
+        configurable: true, writable: true,
+        value: function (d) { window.__partilhado = d; return Promise.resolve(); }
+      });
+    ''')
     pg = ctx.new_page()
     erros = []
     pg.on('pageerror', lambda e: erros.append(str(e)))
@@ -40,7 +57,7 @@ with sync_playwright() as p:
 
     pg.click('#btn-jogar')
     minhas = []
-    for rodada in range(4):
+    for rodada in range(N_RODADAS):
         ate_rodada(pg)
         destaRodada = []
         for pw in PAL[:4]:
@@ -60,7 +77,22 @@ with sync_playwright() as p:
     pg.locator('button:has-text("Criar link de desafio")').click()
     pg.wait_for_timeout(600)
 
-    link = (pg.text_content('.link-desafio') or '').strip()
+    ok('o link cru não aparece na tela', pg.locator('.link-desafio').count() == 0)
+    ok('o botão de convidar aparece', pg.locator('button:has-text("Convidar um amigo")').count() == 1)
+
+    pg.locator('button:has-text("Convidar um amigo")').click()
+    pg.wait_for_timeout(400)
+    partilhado = pg.evaluate("() => window.__partilhado")
+    ok('convidar usa o compartilhamento nativo do aparelho', partilhado is not None)
+
+    texto = (partilhado or {}).get('text', '')
+    ok('o convite não manda o endereço duas vezes', texto.count('#d=') == 1, texto.count('#d='))
+    ok('o convite traz o placar com os quadradinhos', texto.count('R1') == 1 and ('🟦' in texto or '🟧' in texto or '⬜' in texto))
+    ok('o convite tem uma linha por rodada', sum(texto.count('R%d' % (i + 1)) for i in range(N_RODADAS)) == N_RODADAS)
+    ok('o convite não fala do adversário simulado', 'simulado' not in texto.lower(), texto[:80])
+
+    link = [l for l in texto.split('\n') if '#d=' in l]
+    link = link[0].strip() if link else ''
     ok('o link foi gerado', link.startswith(BASE) and '#d=' in link, link[:70])
     ok('o link cabe numa mensagem (abaixo de 2000 caracteres)', 0 < len(link) < 2000, len(link))
     ok('o link usa compressão', '#d=c' in link, link.split('#d=')[-1][:1] if '#d=' in link else '')

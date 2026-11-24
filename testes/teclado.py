@@ -13,6 +13,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import compartilhar_comum as comp
 from playwright.sync_api import sync_playwright
 BASE = sys.argv[1].rstrip('/') if len(sys.argv) > 1 else 'http://localhost:8795'
+
+def rodadas_do_jogo():
+    """Lê RODADAS do index.html: o teste acompanha o jogo em vez de fixar o número."""
+    import os, re as _re
+    raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    fonte = open(os.path.join(raiz, 'index.html'), encoding='utf-8').read()
+    return int(_re.search(r'RODADAS\s*=\s*(\d+)', fonte).group(1))
+N_RODADAS = rodadas_do_jogo()
 S = os.environ.get('CAPTURAS')
 res = []
 def ok(n, c, x=''):
@@ -78,7 +86,7 @@ with sync_playwright() as p:
                     pg.clock.run_for(500); pg.wait_for_timeout(80)
 
             pg.click('#btn-jogar')
-            for rodada in range(4):
+            for rodada in range(N_RODADAS):
                 ate_rodada()
                 tag = f'[{w}x{h} {modo}] rodada {rodada+1}'
                 ok(f'{tag}: começa com o campo em foco', pg.evaluate('document.activeElement.id') == 'entrada')
@@ -111,7 +119,7 @@ with sync_playwright() as p:
                 teclado(h)  # no resumo o teclado fecha
                 bt = pg.locator('#tela-resumo button.btn-primario')
                 if bt.count() and bt.first.is_visible(): bt.first.click(); pg.clock.run_for(800); pg.wait_for_timeout(100)
-            ok(f'[{w}x{h} {modo}] quatro rodadas até o resultado', pg.locator('#tela-final').is_visible())
+            ok(f'[{w}x{h} {modo}] todas as rodadas até o resultado', pg.locator('#tela-final').is_visible())
             if modo == 'conteudo':
                 titulo = pg.inner_text('#fin-titulo')
                 maior = re.search(r'Sua maior palavra: (\S+)\.', pg.inner_text('#tela-final')).group(1)  # nenhuma palavra jogada vai no texto

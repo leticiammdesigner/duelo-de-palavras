@@ -349,7 +349,7 @@ button { font: inherit; color: inherit; }
       <span class="lado"><span class="ponto rival"></span>Adversário</span>
     </div>
     <ul class="regras">
-      <li><span class="ic">4</span><span>Quatro rodadas de um minuto. Cada rodada tem uma pista.</span></li>
+      <li><span class="ic">3</span><span>Três rodadas de um minuto. Cada rodada tem uma pista.</span></li>
       <li><span class="ic">Aa</span><span>Digite palavras que atendam à pista e aperte Enter. Pode digitar sem acento.</span></li>
       <li><span class="ic">⏱</span><span>Se o adversário usar a palavra antes, ela fica com ele. Plural e conjugação da mesma palavra não contam de novo.</span></li>
       <li><span class="ic">+8</span><span>Palavras maiores valem mais: 1, 3, 5 ou 8 pontos.</span></li>
@@ -449,7 +449,7 @@ button { font: inherit; color: inherit; }
 (function () {
 'use strict';
 var M = window.Motor;
-var DURACAO = 60000, RODADAS = 4;
+var DURACAO = 60000, RODADAS = 3;
 
 // ---------- catálogo v0.5: [id, família, nível] ----------
 // Gerado de motor-lexical/catalogo_v05.py (mesma lista do dados/catalogo.json). Não editar à mão.
@@ -1023,7 +1023,7 @@ var LINK_BASE = /^https?:$/.test(location.protocol) ? location.origin + location
 var PISTAS_VALIDAS = new Set(CATALOGO.map(function (x) { return x[0]; }));   // desafios antigos continuam válidos: nenhuma pista saiu
 // ---------- a gravação viaja dentro do link ----------
 // Não há banco: o desafio inteiro vai na URL, comprimido. Uma partida típica dá ~280
-// caracteres, e a pior que dá para jogar em quatro minutos não passa de ~600. Quem recebe
+// caracteres, e a pior que dá para jogar em três minutos não passa de ~530. Quem recebe
 // joga sem depender de servidor nenhum, e o link não expira nem pode ser apagado.
 function b64url(bytes) {
   var s = '', i;
@@ -1037,8 +1037,32 @@ function deB64url(t) {
   for (i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }
+// Formato enxuto: lista posicional em vez de objeto com nomes de campo, tempos em décimos de
+// segundo e guardados como diferença para o anterior, e nada de motor nem data de criação, que
+// ninguém lê do outro lado. Encolhe o link em mais da metade antes mesmo de comprimir.
+function enxugar(doc) {
+  return [3, doc.apelido, doc.nivel, doc.pistas.join(','), doc.total,
+    doc.rodadas.map(function (r) {
+      var ant = 0, saida = [];
+      r.entradas.forEach(function (e) {
+        var d = Math.round(e.t / 100);           // décimos de segundo bastam para a sombra
+        saida.push(d - ant, e.w); ant = d;
+      });
+      return saida;
+    })];
+}
+function desenxugar(a) {
+  if (!Array.isArray(a) || a[0] !== 3) return null;
+  return { versao: 3, apelido: a[1], nivel: a[2], pistas: String(a[3] || '').split(','), total: a[4],
+    rodadas: (a[5] || []).map(function (plano) {
+      var ant = 0, entradas = [], i;
+      for (i = 0; i + 1 < plano.length; i += 2) { ant += plano[i]; entradas.push({ t: ant * 100, w: plano[i + 1] }); }
+      return { entradas: entradas };
+    }) };
+}
+
 async function empacotar(doc) {
-  var bytes = new TextEncoder().encode(JSON.stringify(doc));
+  var bytes = new TextEncoder().encode(JSON.stringify(enxugar(doc)));
   if (typeof CompressionStream === 'function') {
     try {
       var cs = new CompressionStream('deflate-raw');
@@ -1051,14 +1075,18 @@ async function empacotar(doc) {
 }
 async function desempacotar(txt) {
   var modo = String(txt).charAt(0), corpo = deB64url(String(txt).slice(1));
+  var texto;
   if (modo === 'c') {
     var ds = new DecompressionStream('deflate-raw');
     var w = ds.writable.getWriter();
     w.write(corpo).catch(function () {}); w.close().catch(function () {});
-    return JSON.parse(await new Response(ds.readable).text());
-  }
-  if (modo === 'p') return JSON.parse(new TextDecoder().decode(corpo));
-  throw new Error('formato de link desconhecido');
+    texto = await new Response(ds.readable).text();
+  } else if (modo === 'p') texto = new TextDecoder().decode(corpo);
+  else throw new Error('formato de link desconhecido');
+  var bruto = JSON.parse(texto);
+  var d = desenxugar(bruto);
+  if (!d) throw new Error('link de uma versão anterior do jogo');
+  return d;
 }
 
 var dbPromessa = null;
@@ -1107,24 +1135,39 @@ function blocoCriarDesafio(total, linhas) {
     try {
       var pacote = await empacotar(doc);
       var link = LINK_BASE + '#d=' + pacote;
-      box.textContent = '';
-      box.appendChild(el('span', 'rotulo', 'Desafio criado'));
-      var pre = el('p', 'link-desafio', link); box.appendChild(pre);
       // O convite fala com quem vai jogar contra esta gravação, então a linha do resultado
       // contra o simulado não serve: o que interessa para quem recebe é o alvo a bater.
       var texto = ['Duelo de Palavras · ' + NIVEL_NOME[jogo.nivel], 'Gravei minha partida: ' + total + ' pontos.']
         .concat(linhas.slice(2, -1))
         .concat(['', 'Consegue me vencer?', link]).join('\n');
-      var bc = el('button', 'btn btn-primario btn-largo', 'Copiar convite com o link'); bc.type = 'button';
+
+      box.textContent = '';
+      box.appendChild(el('span', 'rotulo', 'Desafio criado'));
+      box.appendChild(el('p', null, 'Mande para quem você quer desafiar. A pessoa joga as mesmas pistas contra as suas palavras.'));
+      // O link não aparece na tela: é um bloco de letras que parece erro de sistema. Quem
+      // precisa dele é o aplicativo de mensagem, não a pessoa.
+      var bs = el('button', 'btn btn-primario btn-largo', 'Convidar um amigo'); bs.type = 'button';
       var ok = el('p', 'ok-copia'); ok.setAttribute('aria-live', 'polite');
-      bc.addEventListener('click', function () {
-        var feito = function () { ok.textContent = 'Copiado. Mande para quem você quer desafiar.'; };
-        var falha = function () { var sel = getSelection(), rg = document.createRange(); rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
-          ok.textContent = 'Link selecionado. Copie com o menu do aparelho.'; };
-        try { navigator.clipboard.writeText(texto).then(feito, falha); } catch (e) { falha(); }
+      bs.addEventListener('click', function () {
+        // O texto já traz o link no fim. Mandar também em 'url' faz vários aplicativos
+        // repetirem o endereço duas vezes na mensagem.
+        if (navigator.share) {
+          navigator.share({ text: texto }).then(function () { ok.textContent = ''; }, function (e) {
+            if (e && e.name === 'AbortError') return;      // a pessoa fechou o menu, sem erro
+            copiar();
+          });
+        } else copiar();
       });
-      box.appendChild(bc); box.appendChild(ok);
-      box.appendChild(el('p', 'aviso', 'A partida inteira vai dentro do link, então ele é comprido. Mande inteiro, sem cortar.'));
+      function copiar() {
+        var feito = function () { ok.textContent = 'Convite copiado. É só colar na conversa.'; };
+        var falha = function () { ok.textContent = 'Não consegui copiar. Toque e segure aqui para selecionar.'; mostrarLink(); };
+        try { navigator.clipboard.writeText(texto).then(feito, falha); } catch (e) { falha(); }
+      }
+      function mostrarLink() {
+        if (box.querySelector('.link-desafio')) return;
+        box.appendChild(el('p', 'link-desafio', link));     // só como último recurso
+      }
+      box.appendChild(bs); box.appendChild(ok);
     } catch (e) {
       bt.disabled = false; bt.textContent = 'Criar link de desafio';
       msg.textContent = 'Não consegui montar o link agora. Tente de novo em instantes.';
@@ -1186,7 +1229,7 @@ async function abrirDesafio(origem) {
   d.id = id;
   $('des-rotulo').textContent = 'Desafio · ' + NIVEL_NOME[d.nivel];
   $('des-titulo').textContent = d.apelido + ' te desafiou';
-  $('des-texto').textContent = 'Quatro rodadas de um minuto contra a partida que ' + d.apelido + ' gravou.';
+  $('des-texto').textContent = 'Três rodadas de um minuto contra a partida que ' + d.apelido + ' gravou.';
   if (d.total != null) { $('des-pontos').textContent = d.total; $('des-pontos-rotulo').textContent = 'pontos de ' + d.apelido + ' na partida original'; $('des-alvo').hidden = false; }
   $('des-regras').hidden = false;
   var bt = $('btn-aceitar'); bt.hidden = false;
@@ -1271,7 +1314,7 @@ async function carregarCardDia() {
     var c = el('span', 'contagem'); $('dia-estado').appendChild(c); ligarContagem(c, 'Próximo em ');
     bt.textContent = 'Ver meu resultado';
   } else {
-    $('dia-estado').textContent = 'Sua tentativa de hoje terminou sem as quatro rodadas. ';
+    $('dia-estado').textContent = 'Sua tentativa de hoje terminou sem as três rodadas. ';
     var c2 = el('span', 'contagem'); $('dia-estado').appendChild(c2); ligarContagem(c2, 'Próximo em ');
     bt.hidden = true;
   }
