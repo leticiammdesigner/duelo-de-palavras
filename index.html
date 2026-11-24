@@ -498,7 +498,27 @@ var PECAS = { N01: ['M', '…'], N03: ['·', '·', '·', '·', '·'], N05: ['P',
 // O código continua aqui; para ligar, troque para true (o card e o #dia voltam a aparecer).
 var DIA_ATIVO = false;
 var NIVEL_NOME = { facil: 'Fácil', medio: 'Médio', dificil: 'Difícil', dia: 'Duelo do Dia' };
-// Adversários simulados: três perfis simples, calibrados a olho (pendente de dados reais).
+// Adversários simulados: três perfis simples.
+//
+// Medidos em 24/11/2026 com testes/simular-rival.js, 500 partidas por cenário. Pontos que o
+// rival faz sozinho, sem jogador humano disputando palavra:
+//
+//            3 rodadas (hoje)        4 rodadas (até 23/11)
+//   Lia       96  (76 a 117)          129  (107 a 152)
+//   Ana      170  (136 a 204)         225  (187 a 260)
+//   Bento    264  (205 a 314)         343  (279 a 403)
+//
+// Entre parênteses, a faixa onde caem 80% das partidas. O ritmo por rodada não mudou com o
+// corte de uma rodada: a Ana faz 56 pontos por rodada nos dois casos, e o total menor vem de
+// jogar menos rodadas, não de ela ter sido enfraquecida.
+//
+// A partida ficou mais volátil, e isso é de propósito: uma rodada passou a valer 33% do total
+// em vez de 25%, e a dispersão subiu de 12,9% para 14,8% da média. Uma rodada ruim pesa mais
+// e não há uma quarta para compensar.
+//
+// Mexer em 'n' é o jeito mais direto de calibrar: no Médio, multiplicar por 0,9 leva a média
+// para 153, e por 0,8 para 136. Decidido em 24/11/2026 não mexer: uma derrota de 161 a 170
+// é a partida que se quer.
 var RIVAIS = {
   facil:   { nome: 'Lia',   zMin: 4.0, n: [5, 8],   inicio: [3500, 6500] },
   medio:   { nome: 'Ana',   zMin: 3.5, n: [8, 12], inicio: [2500, 4500] },
