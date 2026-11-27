@@ -442,6 +442,7 @@ button { font: inherit; color: inherit; }
   <section class="tela rolavel final" id="tela-final" hidden aria-labelledby="fin-titulo"></section>
 </div>
 
+<script src="medir.js?v=1"></script>
 <script src="motor.js"></script>
 <script src="config.js"></script>
 <script src="armazenamento.js"></script>
@@ -450,6 +451,10 @@ button { font: inherit; color: inherit; }
 'use strict';
 var M = window.Motor;
 var DURACAO = 60000, RODADAS = 3;
+
+// Medição do hub (medir.js). Fora do endereço oficial ela não existe ou não faz nada, e o jogo
+// não pode nem piscar por causa disso: daí o try e a checagem.
+function medir(nome) { try { if (window.medir) window.medir(nome); } catch (e) {} }
 
 // ---------- catálogo v0.5: [id, família, nível] ----------
 // Gerado de motor-lexical/catalogo_v05.py (mesma lista do dados/catalogo.json). Não editar à mão.
@@ -612,6 +617,7 @@ async function comecarJogo(nivel, desafio, btn, rotulo) {
     jogo.pistas = await Promise.all(jogo.ids.map(carregarPista));
     carregarExiste().catch(function () {});
     prepararRodada();
+    medir(desafio ? 'duelo-desafio-aceito' : 'duelo-inicia');
   } catch (e) {
     mostrar('tela-inicio');
     $('erro-carga').textContent = 'Não consegui baixar as pistas (' + e.message + '). Confira a conexão e tente de novo.';
@@ -1007,6 +1013,7 @@ function mostrarFinal() {
   bm.addEventListener('click', function () { mostrar('tela-inicio'); });
   ac.appendChild(bj); ac.appendChild(bm); s.appendChild(ac);
   mostrar('tela-final');
+  medir(jogo.desafio ? 'duelo-desafio-termina' : 'duelo-termina');
 }
 
 // ---------- compartilhar resultado (padrão Matutar Games) ----------
@@ -1026,10 +1033,10 @@ function blocoCompartilhar(texto, nota) {
     var copiar = function () {
       var falha = function () { campo.hidden = false; campo.style.height = campo.scrollHeight + 4 + 'px'; campo.focus(); campo.select();
         avisar('Não deu para copiar. Copie o texto abaixo.', 'falhou'); };
-      try { navigator.clipboard.writeText(texto).then(function () { avisar('Resultado copiado!', 'ok'); }, falha); } catch (e) { falha(); }
+      try { navigator.clipboard.writeText(texto).then(function () { avisar('Resultado copiado!', 'ok'); medir('duelo-compartilha'); }, falha); } catch (e) { falha(); }
     };
     if (navigator.share) {
-      navigator.share({ text: texto }).then(function () { avisar('Resultado compartilhado!', 'ok'); },
+      navigator.share({ text: texto }).then(function () { avisar('Resultado compartilhado!', 'ok'); medir('duelo-compartilha'); },
         function (e) { if (!(e && e.name === 'AbortError')) copiar(); });
     } else copiar();
   });
@@ -1182,14 +1189,14 @@ function blocoCriarDesafio(total, linhas) {
         // O texto já traz o link no fim. Mandar também em 'url' faz vários aplicativos
         // repetirem o endereço duas vezes na mensagem.
         if (navigator.share) {
-          navigator.share({ text: texto }).then(function () { ok.textContent = ''; }, function (e) {
+          navigator.share({ text: texto }).then(function () { ok.textContent = ''; medir('duelo-convida'); }, function (e) {
             if (e && e.name === 'AbortError') return;      // a pessoa fechou o menu, sem erro
             copiar();
           });
         } else copiar();
       });
       function copiar() {
-        var feito = function () { ok.textContent = 'Convite copiado. É só colar na conversa.'; };
+        var feito = function () { ok.textContent = 'Convite copiado. É só colar na conversa.'; medir('duelo-convida'); };
         var falha = function () { ok.textContent = 'Não consegui copiar. Toque e segure aqui para selecionar.'; mostrarLink(); };
         try { navigator.clipboard.writeText(texto).then(feito, falha); } catch (e) { falha(); }
       }
@@ -1263,6 +1270,7 @@ async function abrirDesafio(origem) {
   if (d.total != null) { $('des-pontos').textContent = d.total; $('des-pontos-rotulo').textContent = 'pontos de ' + d.apelido + ' na partida original'; $('des-alvo').hidden = false; }
   $('des-regras').hidden = false;
   var bt = $('btn-aceitar'); bt.hidden = false;
+  medir('duelo-desafio-recebido');
   bt.onclick = function () { comecarJogo(d.nivel, d, bt, 'Aceitar desafio'); };
   bt.focus({ preventScroll: true });
 }
